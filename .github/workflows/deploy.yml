@@ -1,0 +1,57 @@
+name: Build and Push to Aliyun ACR
+
+on:
+  push:
+    branches: [ "main" ] # 当 main 分支有代码提交时触发
+
+# 环境变量：定义你的镜像仓库地址
+env:
+  REGISTRY: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com # 请根据实际地域修改，如 cn-shanghai
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 1. 登录阿里云容器镜像服务
+    - name: Login to Aliyun Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.ALIYUN_USERNAME }}
+        password: ${{ secrets.ALIYUN_PASSWORD }}
+
+    # 2. 构建并推送后端镜像 (Spring Boot)
+    - name: Build and Push Backend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./stock-backend # 这里填你后端代码的文件夹名
+        file: ./stock-backend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/backend:latest
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/backend:${{ github.sha }}
+
+    # 3. 构建并推送前端镜像 (Next.js)
+    - name: Build and Push Frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./stock-frontend
+        file: ./stock-frontend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/frontend:latest
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/frontend:${{ github.sha }}
+
+    # 4. 构建并推送 ETL 镜像 (Python)
+    - name: Build and Push ETL
+      uses: docker/build-push-action@v5
+      with:
+        context: ./stock-etl
+        file: ./stock-etl/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/etl:latest
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/etl:${{ github.sha }}

@@ -1,0 +1,6 @@
+numpy
+pandas
+pymysql
+sqlalchemy
+schedule
+requests

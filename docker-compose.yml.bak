@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # 1. 数据库 (使用 MySQL 或 PostgreSQL)
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: stock_db
+    volumes:
+      - ./data/mysql:/var/lib/mysql # 数据持久化挂载到宿主机
+
+  # 2. 缓存 (你之前关注的 Redis)
+  redis:
+    image: redis:alpine
+    restart: always
+    #以此命令启动可开启持久化
+    command: redis-server --appendonly yes 
+
+  # 3. 后端 (Spring Boot)
+  backend:
+    build: ./stock-backend
+    image: my-springboot-app:latest # 你的镜像
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # 容器内互联，主机名直接写 service name
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stock_db 
+      SPRING_REDIS_HOST: redis
+    depends_on:
+      - db
+      - redis
+
+  # 4. 前端 (Next.js)
+  frontend:
+    build: ./stock-frontend
+    image: my-nextjs-app:latest
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: https://47.100.96.136/api
+    depends_on:
+      - backend
+
+  # 5. ETL 任务 (Python + NumPy)
+  etl-job:
+    build: ./stock-etl
+    image: my-python-etl:latest
+    # 挂载代码目录，方便热修脚本
+    volumes:
+      - ./etl_scripts:/app/scripts
+    # 方案A: 使用 cron 在容器内运行
+    # 方案B: 这是一个死循环守护进程，内部用 schedule 库定时
+    command: python /app/scripts/main_scheduler.py
+    environment:
+      DB_HOST: db
+    depends_on:
+      - db
+
+  # 6. 反向代理 (Nginx)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/cert:/etc/nginx/cert # SSL证书
+    depends_on:
+      - frontend
+      - backend
