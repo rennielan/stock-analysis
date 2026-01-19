@@ -35,15 +35,15 @@ jobs:
           ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/backend:${{ github.sha }}
 
     # 3. 构建并推送前端镜像 (Next.js)
-    #- name: Build and Push Frontend
-    #  uses: docker/build-push-action@v5
-    #  with:
-    #    context: ./stock-frontend
-    #    file: ./stock-frontend/Dockerfile
-    #    push: true
-    #    tags: |
-    #      ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/frontend:latest
-    #     ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/frontend:${{ github.sha }}
+    - name: Build and Push Frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./stock-frontend
+        file: ./stock-frontend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/frontend:latest
+          ${{ env.REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/frontend:${{ github.sha }}
 
     # 4. 构建并推送 ETL 镜像 (Python)
     #- name: Build and Push ETL

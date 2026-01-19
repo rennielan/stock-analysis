@@ -1,0 +1,5 @@
+{
+  "name": "StockWatch",
+  "description": "A minimalist, dark-mode stock trading plan manager focused on risk management and trade planning.",
+  "requestFramePermissions": []
+}

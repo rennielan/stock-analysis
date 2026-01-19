@@ -8,56 +8,41 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # ==========================================
-# 阶段 2: 安装依赖 (Deps)
+# 阶段 2: 依赖安装 (Deps)
 # ==========================================
-FROM base AS deps
-# 复制 package.json 和 lock 文件
+FROM node:18-alpine AS deps
+
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
 COPY package.json package-lock.json* ./
-# 使用 ci 安装依赖，比 install 更快更严格
-RUN npm ci
+RUN npm ci --only=production && npm cache clean --force
 
 # ==========================================
-# 阶段 3: 构建项目 (Builder)
+# 阶段 2: 构建应用 (Builder)
 # ==========================================
-FROM base AS builder
+FROM node:18-alpine AS builder
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# 开始构建 (这会根据 next.config.js 生成 standalone 文件夹)
-# 这一步建议关闭 ESLint 检查以加快速度
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 RUN npm run build
 
 # ==========================================
-# 阶段 4: 生产运行 (Runner)
+# 阶段 3: 生产运行 (Production)
 # ==========================================
-FROM base AS runner
-WORKDIR /app
+FROM nginx:alpine AS production
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone
 
-# 创建非 root 用户，提高安全性
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 自动处理静态文件缓存
-COPY --from=builder /app/public ./public
+# 使用统一的nginx配置
+# 注意：这里使用默认配置，因为nginx服务会处理路由
 
-# 只复制构建出来的 standalone 文件夹，极大减小体积
-# 注意：Next.js 会自动把必要的 node_modules 打包进这里
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# 切换用户
-USER nextjs
-
-# 暴露端口
-EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# 启动命令
-CMD ["node", "server.js"]
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

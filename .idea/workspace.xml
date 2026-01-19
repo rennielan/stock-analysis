@@ -5,9 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock-frontend/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock-frontend/nginx-frontend.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock-frontend/nginx.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/MarsCodeWorkspaceAppSettings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MarsCodeWorkspaceAppSettings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml.bak" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/Dockerfile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
