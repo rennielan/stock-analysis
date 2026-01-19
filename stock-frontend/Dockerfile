@@ -1,7 +1,7 @@
 # ==========================================
 # 阶段 1: 基础环境 (Base)
 # ==========================================
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # 安装必要的依赖
 RUN apk add --no-cache libc6-compat git python3 make g++
@@ -19,6 +19,9 @@ COPY package.json package-lock.json* ./
 
 # 安装所有依赖（包括开发依赖）
 RUN npm ci --no-audit --prefer-offline
+
+# 安装terser（Vite v3+ 必需的可选依赖）
+RUN npm install terser --save-dev
 
 # ==========================================
 # 阶段 3: 构建应用 (Builder)
