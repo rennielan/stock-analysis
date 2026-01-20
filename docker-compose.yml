@@ -42,7 +42,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "3000:80"
+      - "80:80"
 
   # 5. ETL 任务 (Python + NumPy)
   #etl-job:
