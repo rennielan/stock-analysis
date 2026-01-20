@@ -1,46 +1,48 @@
 version: '3.8'
 
 services:
-  # 1. 数据库 (使用 MySQL 或 PostgreSQL)
+  # 1. 数据库 (保持不变)
   db:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: stock_db
     volumes:
-      - ./data/mysql:/var/lib/mysql # 数据持久化挂载到宿主机
+      - ./data/mysql:/var/lib/mysql
 
-  # 2. 缓存 (你之前关注的 Redis)
+  # 2. 缓存 (保持不变)
   redis:
     image: redis:alpine
     restart: always
-    #以此命令启动可开启持久化
-    command: redis-server --appendonly yes 
+    command: redis-server --appendonly yes
 
-  # 3. 后端 (Spring Boot)
+  # 3. 后端 (修改这里！)
   backend:
-    build: ./stock-backend
-    image: my-springboot-app:latest # 你的镜像
+    # build: ./stock-backend  <-- 如果是本地跑用这个
+    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/backend:latest # <-- 如果是服务器跑用这个
     restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      # 容器内互联，主机名直接写 service name
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stock_db 
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stock_db
       SPRING_REDIS_HOST: redis
     depends_on:
       - db
       - redis
-
+    # 【新增】因为暂时不用 Nginx，我们需要直接通过 IP:8080 访问后端
+    ports:
+      - "8080:8080"
   # 4. 前端 (Next.js)
-  #frontend:
-  #  build: ./stock-frontend
-  #  image: my-nextjs-app:latest
-  #  restart: always
-  #  environment:
-  #    NEXT_PUBLIC_API_URL: https://47.100.96.136/api
-  #  depends_on:
-  #    - backend
+  frontend:
+    build: ./stock-frontend
+    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/frontend:latest
+    restart: always
+    environment:
+      VITE_API_URL: https://localhost:8080/api
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
 
   # 5. ETL 任务 (Python + NumPy)
   #etl-job:
@@ -58,14 +60,13 @@ services:
   #    - db
 
   # 6. 反向代理 (Nginx)
-  #nginx:
-  #  image: nginx:alpine
-  #  ports:
-  #    - "80:80"
-  #    - "443:443"
-  #  volumes:
-  #    - ./nginx/conf.d:/etc/nginx/conf.d
-  #    - ./nginx/cert:/etc/nginx/cert # SSL证书
-  #  depends_on:
-  #    - frontend
-  #    - backend
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d
+    depends_on:
+      - frontend
+      - backend

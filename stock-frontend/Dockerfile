@@ -52,8 +52,8 @@ RUN apk add --no-cache tzdata && \
 # 复制构建产物
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 复制自定义nginx配置（如果存在）
+# 复制自定义nginx配置
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 80  # ✅ 确保暴露80端口
 CMD ["nginx", "-g", "daemon off;"]
