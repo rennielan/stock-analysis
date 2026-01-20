@@ -35,14 +35,14 @@ services:
   # 4. 前端 (Next.js)
   frontend:
     build: ./stock-frontend
-    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/frontend:latest
+    image: crpi-s0xdkdkz419b42ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/frontend:latest
     restart: always
     environment:
-      VITE_API_URL: https://localhost:8080/api
+      VITE_API_URL: http://backend:8080/api  
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "80:80"  
 
   # 5. ETL 任务 (Python + NumPy)
   #etl-job:
