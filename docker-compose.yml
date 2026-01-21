@@ -19,30 +19,31 @@ services:
 
   # 3. 后端 (修改这里！)
   backend:
-    # build: ./stock-backend  <-- 如果是本地跑用这个
-    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/backend:latest # <-- 如果是服务器跑用这个
+    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/backend:latest
     restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/stock_db
-      SPRING_REDIS_HOST: redis
+      DB_HOST: db  # 容器内部使用服务名
+      DB_PORT: 3306
+      DB_NAME: stock_db
+      DB_USERNAME: root
+      DB_PASSWORD: root
     depends_on:
       - db
       - redis
-    # 【新增】因为暂时不用 Nginx，我们需要直接通过 IP:8080 访问后端
     ports:
       - "8080:8080"
   # 4. 前端 (Next.js)
   frontend:
     build: ./stock-frontend
-    image: crpi-s0xdkdkz419b42ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/frontend:latest
+    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/frontend:latest
     restart: always
     environment:
-      VITE_API_URL: http://backend:8080/api  
+      VITE_API_URL: https://localhost:8080/api
     depends_on:
       - backend
     ports:
-      - "80:80"  
+      - "80:80"
 
   # 5. ETL 任务 (Python + NumPy)
   #etl-job:
