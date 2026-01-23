@@ -5,21 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/config/DataInitializer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/config/JpaConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/StrategyType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/resources/application-dev.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock-etl/stock_etl.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/StockAnalysisApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/StockAnalysisApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/classes/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/classes/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/classes/com/stock/analysis/StockAnalysisApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/classes/com/stock/analysis/StockAnalysisApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-etl/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/vite.config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,14 +61,17 @@
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/resources",
     "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
+    "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "MavenSettings"
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/stock-backend/src/main/resources" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/stock-frontend/services" />
     </key>
   </component>
   <component name="RunManager">
@@ -147,5 +144,8 @@
       <updated>1768053298572</updated>
     </task>
     <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.ts" />
   </component>
 </project>
