@@ -92,18 +92,11 @@ venv.bak/
 # Docker
 # ================================
 .dockerignore
-Dockerfile*
-docker-compose*.yml
+# Dockerfile*
+# docker-compose*.yml
 
 # ================================
 # 测试覆盖率
 # ================================
 coverage/
 .nyc_output/
-
-# ================================
-# 依赖锁定文件（保留这些文件）
-# ================================
-# package-lock.json  # 保留，用于精确安装
-# yarn.lock         # 保留，如果使用yarn
-# pnpm-lock.yaml    # 保留，如果使用pnpm

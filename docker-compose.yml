@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. 数据库 (保持不变)
+  # 1. 数据库
   db:
     image: mysql:8.0
     restart: always
@@ -10,20 +10,24 @@ services:
       MYSQL_DATABASE: stock_db
     volumes:
       - ./data/mysql:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
 
-  # 2. 缓存 (保持不变)
+  # 2. 缓存
   redis:
     image: redis:alpine
     restart: always
     command: redis-server --appendonly yes
 
-  # 3. 后端 (修改这里！)
+  # 3. 后端
   backend:
     image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/backend:latest
     restart: always
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DB_HOST: db  # 容器内部使用服务名
+      DB_HOST: db
       DB_PORT: 3306
       DB_NAME: stock_db
       DB_USERNAME: root
@@ -33,41 +37,29 @@ services:
       - redis
     ports:
       - "8080:8080"
-  # 4. 前端 (Next.js)
+
+  # 4. 前端
   frontend:
     build: ./stock-frontend
     image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/frontend:latest
     restart: always
     environment:
-      VITE_API_URL: https://localhost:8080/api
+      VITE_API_URL: /api
     depends_on:
       - backend
     ports:
       - "80:80"
 
-  # 5. ETL 任务 (Python + NumPy)
-  #etl-job:
-  #  build: ./stock-etl
-  #  image: my-python-etl:latest
-  #  # 挂载代码目录，方便热修脚本
-  #  volumes:
-  #    - ./etl_scripts:/app/scripts
-  #  # 方案A: 使用 cron 在容器内运行
-  #  # 方案B: 这是一个死循环守护进程，内部用 schedule 库定时
-  #  command: python /app/scripts/main_scheduler.py
-  #  environment:
-  #    DB_HOST: db
-  #  depends_on:
-  #    - db
-
-  # 6. 反向代理 (Nginx)
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d
+  # 5. ETL 任务
+  etl-job:
+    build: ./stock-etl
+    image: crpi-s0xdkdkz419b32ae.cn-shanghai.personal.cr.aliyuncs.com/stock-analysis/etl:latest
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_NAME: stock_db
     depends_on:
-      - frontend
-      - backend
+      - db
