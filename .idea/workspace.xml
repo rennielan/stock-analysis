@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-backend/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/nginx-frontend.conf" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/nginx-frontend.conf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/vite.config.ts" afterDir="false" />

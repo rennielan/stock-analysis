@@ -14,8 +14,8 @@ export default defineConfig(({ mode }) => {
           target: 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
-          // 关键：本地开发也需要重写路径，去掉 /api
-          rewrite: (path) => path.replace(/^\/api/, '')
+          // 移除 rewrite，直接透传 /api
+          // rewrite: (path) => path.replace(/^\/api/, '')
         }
       }
     },

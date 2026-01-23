@@ -17,9 +17,8 @@ spring:
 
 server:
   port: 8080
-  # 移除 context-path，让后端直接监听 /stocks
-  # servlet:
-  #   context-path: /api
+  servlet:
+    context-path: /api
 
 logging:
   level:
