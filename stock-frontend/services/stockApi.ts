@@ -6,6 +6,7 @@ const API_BASE_URL = '/api/stocks';
 const transformToFrontend = (data: any): StockData => ({
   id: String(data.id),
   symbol: data.symbol,
+  name: data.name, // 映射名称
   currentPrice: data.currentPrice,
   changePercent: data.changePercent,
   strategy: data.strategy as StrategyType,

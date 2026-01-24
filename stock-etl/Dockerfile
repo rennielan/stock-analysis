@@ -18,6 +18,6 @@ RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua
 # 2. 拷贝脚本代码
 COPY . .
 
-# 启动命令 (假设您的入口脚本是 main.py)
+# 启动命令
 # 使用 -u 参数让 Python 的 print 立即输出到 Docker 日志中，方便调试
-CMD ["python", "-u", "main.py"]
+CMD ["python", "-u", "stock_etl.py"]

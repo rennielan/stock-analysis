@@ -17,6 +17,9 @@ public class Stock {
     
     @Column(name = "symbol", nullable = false, length = 20)
     private String symbol;
+
+    @Transient // 不持久化到数据库，仅用于展示
+    private String name;
     
     @Column(name = "current_price", nullable = false, precision = 10, scale = 4)
     private BigDecimal currentPrice;
@@ -63,6 +66,7 @@ public class Stock {
         return "Stock{" +
                 "id=" + id +
                 ", symbol='" + symbol + '\'' +
+                ", name='" + name + '\'' +
                 ", currentPrice=" + currentPrice +
                 ", changePercent=" + changePercent +
                 ", strategy=" + strategy +

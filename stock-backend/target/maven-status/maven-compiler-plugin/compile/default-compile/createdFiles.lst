@@ -1,2 +1,11 @@
+com/stock/analysis/entity/DailyKLine.class
+com/stock/analysis/entity/StrategyType.class
+com/stock/analysis/config/JpaConfig.class
 com/stock/analysis/controller/HelloController.class
 com/stock/analysis/StockAnalysisApplication.class
+com/stock/analysis/repository/StockBasicRepository.class
+com/stock/analysis/entity/Stock.class
+com/stock/analysis/controller/StockController.class
+com/stock/analysis/config/DataInitializer.class
+com/stock/analysis/entity/StockBasic.class
+com/stock/analysis/repository/StockRepository.class

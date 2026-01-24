@@ -1,6 +1,8 @@
 package com.stock.analysis.controller;
 
 import com.stock.analysis.entity.Stock;
+import com.stock.analysis.entity.StockBasic;
+import com.stock.analysis.repository.StockBasicRepository;
 import com.stock.analysis.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/stocks")
@@ -17,9 +21,21 @@ public class StockController {
     @Autowired
     private StockRepository stockRepository;
 
+    @Autowired
+    private StockBasicRepository stockBasicRepository;
+
     @GetMapping
     public List<Stock> getAllStocks() {
-        return stockRepository.findAll();
+        // 修改为只查询活跃的股票
+        List<Stock> stocks = stockRepository.findByIsActiveTrue();
+        
+        // 批量获取股票名称
+        for (Stock stock : stocks) {
+            Optional<StockBasic> basic = stockBasicRepository.findBySymbol(stock.getSymbol());
+            basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
+        }
+        
+        return stocks;
     }
 
     @PostMapping
@@ -27,13 +43,25 @@ public class StockController {
         stock.setCreatedAt(LocalDateTime.now());
         stock.setUpdatedAt(LocalDateTime.now());
         stock.setIsActive(true);
-        return stockRepository.save(stock);
+        Stock savedStock = stockRepository.save(stock);
+        
+        // 填充名称返回
+        Optional<StockBasic> basic = stockBasicRepository.findBySymbol(savedStock.getSymbol());
+        basic.ifPresent(stockBasic -> savedStock.setName(stockBasic.getName()));
+        
+        return savedStock;
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Stock> getStockById(@PathVariable Long id) {
-        Optional<Stock> stock = stockRepository.findById(id);
-        return stock.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        Optional<Stock> stockOptional = stockRepository.findById(id);
+        if (stockOptional.isPresent()) {
+            Stock stock = stockOptional.get();
+            Optional<StockBasic> basic = stockBasicRepository.findBySymbol(stock.getSymbol());
+            basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
+            return ResponseEntity.ok(stock);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
@@ -58,6 +86,11 @@ public class StockController {
             stock.setUpdatedAt(LocalDateTime.now());
 
             Stock updatedStock = stockRepository.save(stock);
+            
+            // 填充名称
+            Optional<StockBasic> basic = stockBasicRepository.findBySymbol(updatedStock.getSymbol());
+            basic.ifPresent(stockBasic -> updatedStock.setName(stockBasic.getName()));
+
             return ResponseEntity.ok(updatedStock);
         }
         return ResponseEntity.notFound().build();
@@ -66,7 +99,7 @@ public class StockController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStock(@PathVariable Long id) {
         if (stockRepository.existsById(id)) {
-            stockRepository.deleteById(id);
+            stockRepository.softDeleteById(id);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();

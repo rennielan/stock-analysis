@@ -4,9 +4,11 @@ import com.stock.analysis.entity.Stock;
 import com.stock.analysis.entity.StrategyType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -120,18 +122,24 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
     /**
      * 更新股票价格
      */
+    @Modifying
+    @Transactional
     @Query("UPDATE Stock s SET s.currentPrice = :price, s.changePercent = :changePercent, s.updatedAt = CURRENT_TIMESTAMP WHERE s.symbol = :symbol AND s.isActive = true")
     int updateStockPrice(@Param("symbol") String symbol, @Param("price") BigDecimal price, @Param("changePercent") BigDecimal changePercent);
     
     /**
      * 软删除股票（设置isActive为false）
      */
+    @Modifying
+    @Transactional
     @Query("UPDATE Stock s SET s.isActive = false, s.updatedAt = CURRENT_TIMESTAMP WHERE s.id = :id")
-    int softDeleteById(@Param("id") Long id);
+    void softDeleteById(@Param("id") Long id);
     
     /**
      * 批量软删除股票
      */
+    @Modifying
+    @Transactional
     @Query("UPDATE Stock s SET s.isActive = false, s.updatedAt = CURRENT_TIMESTAMP WHERE s.id IN :ids")
     int softDeleteByIds(@Param("ids") List<Long> ids);
     

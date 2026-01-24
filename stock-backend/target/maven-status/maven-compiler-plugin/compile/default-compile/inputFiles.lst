@@ -1,2 +1,11 @@
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java
 /Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/StockAnalysisApplication.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/config/JpaConfig.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/entity/DailyKLine.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/entity/StockBasic.java
 /Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/controller/HelloController.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/repository/StockBasicRepository.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/config/DataInitializer.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/entity/StrategyType.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java
+/Users/lejie/Documents/GitHub/stock-analysis/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java
