@@ -5,26 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/DailyKLine.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/StockBasic.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockBasicRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-etl/stock_basic_etl.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-frontend/api/stockApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/deploy.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/deploy.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar.original" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar.original" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-etl/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-etl/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-etl/stock_etl.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/stock_etl.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/components/StockCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/components/StockCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
