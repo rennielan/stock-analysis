@@ -19,7 +19,31 @@ encoded_pass = urllib.parse.quote_plus(DB_PASS)
 db_url = f"mysql+pymysql://{DB_USER}:{encoded_pass}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 engine = create_engine(db_url)
 
+def debug_db_info():
+    """调试数据库连接信息"""
+    try:
+        with engine.connect() as conn:
+            # 检查当前数据库
+            current_db = conn.execute(text("SELECT DATABASE()")).scalar()
+            print(f"Current Database: {current_db}")
+            
+            # 检查所有表
+            tables = conn.execute(text("SHOW TABLES")).fetchall()
+            print(f"Tables in {current_db}: {[t[0] for t in tables]}")
+            
+            # 检查 stock_basics 表结构
+            if 'stock_basics' in [t[0] for t in tables]:
+                print("Table 'stock_basics' exists.")
+            else:
+                print("CRITICAL: Table 'stock_basics' NOT found!")
+                
+    except Exception as e:
+        print(f"Database connection debug failed: {e}")
+
 def fetch_and_save_stock_basics():
+    # 调试数据库信息
+    debug_db_info()
+
     # 登陆系统
     lg = bs.login()
     if lg.error_code != '0':
@@ -61,23 +85,17 @@ def fetch_and_save_stock_basics():
         }
         result.rename(columns=db_columns, inplace=True)
         
+        # 关键修改：保留股票(1)和指数(2)类型
+        # 1：股票，2：指数，3：其它，4：可转债，5：ETF
+        print(f"Total records before filtering: {len(result)}")
+        result = result[result['type'].isin(['1', '2'])]
+        print(f"Total records after filtering (type='1' or '2'): {len(result)}")
+        
         # 提取 symbol (去掉 sh. sz. 前缀，方便关联)
         # 假设 code 格式为 sh.600000
         result['symbol'] = result['code'].apply(lambda x: x.split('.')[1] if '.' in x else x)
 
         # 保存到数据库
-        # 使用临时表策略进行 upsert (更新或插入)
-        # 或者简单策略：先清空表再全量插入（如果数据量不大且不需要保留历史变动）
-        # 考虑到 stock_basics 数据量在 5000+，全量刷新是可以接受的，但为了稳妥，我们使用逐行 upsert 或者 pandas 的 to_sql + 临时表
-        
-        # 这里采用先删除所有数据再插入的简单策略（全量刷新）
-        # 注意：这会短暂导致表为空，生产环境慎用。
-        # 更好的方式是：读取现有数据 -> 对比 -> 仅更新/插入差异
-        
-        # 既然是基本资料，变化频率低，我们采用：
-        # 1. 存入临时表
-        # 2. 使用 SQL 语句从临时表同步到主表 (INSERT ON DUPLICATE KEY UPDATE)
-        
         temp_table_name = 'stock_basics_temp'
         result.to_sql(temp_table_name, engine, if_exists='replace', index=False)
         
