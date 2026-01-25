@@ -40,8 +40,12 @@ const App: React.FC = () => {
   };
 
   // --- Handlers ---
-  const handleAddStock = async (symbol: string) => {
+  const handleAddStock = async (code: string) => {
+    // code 格式如 sh.600000
+    const symbol = code.includes('.') ? code.split('.')[1] : code;
+
     const newStock: Partial<StockData> = {
+      code,
       symbol,
       currentPrice: 0, // 初始价格为0，等待ETL更新
       changePercent: 0,
@@ -54,7 +58,15 @@ const App: React.FC = () => {
 
     try {
       const createdStock = await stockApi.createStock(newStock);
-      setStocks(prev => [createdStock, ...prev]);
+      // 如果后端返回了已存在的记录，我们更新列表中的该记录（如果已在列表中），或者添加到列表顶部
+      setStocks(prev => {
+        const exists = prev.find(s => s.id === createdStock.id);
+        if (exists) {
+          return prev.map(s => s.id === createdStock.id ? createdStock : s);
+        }
+        return [createdStock, ...prev];
+      });
+
       // 添加成功后立即触发一次刷新，尝试获取最新状态
       setTimeout(fetchStocks, 1000);
     } catch (err) {
@@ -110,7 +122,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="w-[100px] hidden sm:block text-right text-xs text-slate-500 font-mono">
-            v1.2.0 Live
+            v1.3.0 Live
           </div>
         </div>
       </header>
@@ -139,7 +151,7 @@ const App: React.FC = () => {
             </div>
             <h3 className="text-lg font-medium text-slate-300">您的关注列表为空</h3>
             <p className="text-slate-500 mt-2 max-w-sm">
-              在上方输入股票代码，开始制定您的交易计划。
+              在上方搜索股票代码或名称，开始制定您的交易计划。
             </p>
           </div>
         ) : (

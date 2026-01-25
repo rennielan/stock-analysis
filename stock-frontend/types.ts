@@ -7,8 +7,9 @@ export enum StrategyType {
 
 export interface StockData {
   id: string;
-  symbol: string;
-  name?: string; // 新增股票名称字段
+  code: string; // 新增 code (如 sh.600000)
+  symbol: string; // 纯数字代码 (如 600000)
+  name?: string;
   currentPrice: number;
   changePercent: number;
   

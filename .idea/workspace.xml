@@ -5,9 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/stock-etl/reset_stocks_table.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/config/DataInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/config/DataInitializer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/DailyKLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/DailyKLine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockBasicRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockBasicRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-etl/stock_etl.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/stock_etl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/components/AddStockForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/components/AddStockForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/types.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

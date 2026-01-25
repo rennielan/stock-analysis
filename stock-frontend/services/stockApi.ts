@@ -5,8 +5,9 @@ const API_BASE_URL = '/api/stocks';
 // Helper to convert Backend format to Frontend format
 const transformToFrontend = (data: any): StockData => ({
   id: String(data.id),
+  code: data.code, // 新增 code
   symbol: data.symbol,
-  name: data.name, // 映射名称
+  name: data.name,
   currentPrice: data.currentPrice,
   changePercent: data.changePercent,
   strategy: data.strategy as StrategyType,
@@ -74,5 +75,13 @@ export const stockApi = {
     if (!response.ok) {
       throw new Error('Failed to delete stock');
     }
+  },
+
+  searchStocks: async (keyword: string): Promise<any[]> => {
+    const response = await fetch(`${API_BASE_URL}/search?keyword=${encodeURIComponent(keyword)}`);
+    if (!response.ok) {
+      throw new Error('Failed to search stocks');
+    }
+    return response.json();
   }
 };

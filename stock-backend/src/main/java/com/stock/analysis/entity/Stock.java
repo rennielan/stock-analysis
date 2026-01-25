@@ -7,7 +7,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "stocks")
+@Table(name = "stocks", indexes = {
+    @Index(name = "idx_stock_code", columnList = "code", unique = true)
+})
 @Data
 public class Stock {
     
@@ -15,8 +17,11 @@ public class Stock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "code", nullable = false, length = 20)
+    private String code; // 唯一标识，如 sh.600000
+
     @Column(name = "symbol", nullable = false, length = 20)
-    private String symbol;
+    private String symbol; // 纯数字代码，如 600000
 
     @Transient // 不持久化到数据库，仅用于展示
     private String name;
@@ -55,7 +60,8 @@ public class Stock {
     // 构造函数
     public Stock() {}
     
-    public Stock(String symbol, BigDecimal currentPrice, BigDecimal changePercent) {
+    public Stock(String code, String symbol, BigDecimal currentPrice, BigDecimal changePercent) {
+        this.code = code;
         this.symbol = symbol;
         this.currentPrice = currentPrice;
         this.changePercent = changePercent;
@@ -65,6 +71,7 @@ public class Stock {
     public String toString() {
         return "Stock{" +
                 "id=" + id +
+                ", code='" + code + '\'' +
                 ", symbol='" + symbol + '\'' +
                 ", name='" + name + '\'' +
                 ", currentPrice=" + currentPrice +
@@ -76,5 +83,4 @@ public class Stock {
                 ", isActive=" + isActive +
                 '}';
     }
-
 }

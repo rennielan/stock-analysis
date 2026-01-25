@@ -10,9 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/stocks")
@@ -26,51 +24,48 @@ public class StockController {
 
     @GetMapping
     public List<Stock> getAllStocks() {
-        // 修改为只查询活跃的股票
         List<Stock> stocks = stockRepository.findByIsActiveTrue();
-        
-        // 批量获取股票名称
         for (Stock stock : stocks) {
-            Optional<StockBasic> basic = stockBasicRepository.findBySymbol(stock.getSymbol());
+            // 使用 code 关联
+            Optional<StockBasic> basic = stockBasicRepository.findByCode(stock.getCode());
             basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
         }
-        
         return stocks;
     }
 
     @PostMapping
     public Stock createStock(@RequestBody Stock stock) {
-        // 1. 检查是否已存在该股票记录（无论是否活跃）
-        Optional<Stock> existingStock = stockRepository.findBySymbol(stock.getSymbol());
+        // 1. 检查是否已存在该股票记录 (使用 code)
+        Optional<Stock> existingStock = stockRepository.findByCode(stock.getCode());
         
         if (existingStock.isPresent()) {
             Stock existing = existingStock.get();
             if (Boolean.TRUE.equals(existing.getIsActive())) {
-                // 如果已存在且活跃，不做任何操作，直接返回现有记录
-                // 填充名称返回
-                Optional<StockBasic> basic = stockBasicRepository.findBySymbol(existing.getSymbol());
+                Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
                 basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
                 return existing;
             } else {
-                // 如果已存在但不活跃（已软删除），重新激活
                 stockRepository.reactivateStock(existing.getId());
                 existing.setIsActive(true);
                 existing.setUpdatedAt(LocalDateTime.now());
-                // 填充名称返回
-                Optional<StockBasic> basic = stockBasicRepository.findBySymbol(existing.getSymbol());
+                Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
                 basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
                 return existing;
             }
         }
 
-        // 2. 如果不存在，创建新记录
+        // 2. 创建新记录
+        // 确保 symbol 存在 (如果前端只传了 code)
+        if (stock.getSymbol() == null && stock.getCode() != null && stock.getCode().contains(".")) {
+            stock.setSymbol(stock.getCode().split("\\.")[1]);
+        }
+        
         stock.setCreatedAt(LocalDateTime.now());
         stock.setUpdatedAt(LocalDateTime.now());
         stock.setIsActive(true);
         Stock savedStock = stockRepository.save(stock);
         
-        // 填充名称返回
-        Optional<StockBasic> basic = stockBasicRepository.findBySymbol(savedStock.getSymbol());
+        Optional<StockBasic> basic = stockBasicRepository.findByCode(savedStock.getCode());
         basic.ifPresent(stockBasic -> savedStock.setName(stockBasic.getName()));
         
         return savedStock;
@@ -81,14 +76,10 @@ public class StockController {
         Optional<Stock> stockOptional = stockRepository.findById(id);
         if (stockOptional.isPresent()) {
             Stock stock = stockOptional.get();
-            // 确保只返回活跃的股票，或者根据业务需求决定是否返回已删除的
-            // 这里假设详情接口可以返回已删除的，或者前端应该处理404
-            // 如果严格要求只返回活跃的：
             if (!Boolean.TRUE.equals(stock.getIsActive())) {
                 return ResponseEntity.notFound().build();
             }
-            
-            Optional<StockBasic> basic = stockBasicRepository.findBySymbol(stock.getSymbol());
+            Optional<StockBasic> basic = stockBasicRepository.findByCode(stock.getCode());
             basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
             return ResponseEntity.ok(stock);
         }
@@ -100,19 +91,17 @@ public class StockController {
         Optional<Stock> stockOptional = stockRepository.findById(id);
         if (stockOptional.isPresent()) {
             Stock stock = stockOptional.get();
-            
-            // 检查是否活跃
             if (!Boolean.TRUE.equals(stock.getIsActive())) {
                 return ResponseEntity.notFound().build();
             }
             
-            // 更新非空字段或全部字段 (根据业务需求，这里假设前端发送完整对象，但做防空处理更安全)
+            // 更新字段
+            if (stockDetails.getCode() != null) stock.setCode(stockDetails.getCode());
             if (stockDetails.getSymbol() != null) stock.setSymbol(stockDetails.getSymbol());
             if (stockDetails.getCurrentPrice() != null) stock.setCurrentPrice(stockDetails.getCurrentPrice());
             if (stockDetails.getChangePercent() != null) stock.setChangePercent(stockDetails.getChangePercent());
             if (stockDetails.getStrategy() != null) stock.setStrategy(stockDetails.getStrategy());
             
-            // 允许为空的字段
             stock.setTargetPrice(stockDetails.getTargetPrice());
             stock.setStopLoss(stockDetails.getStopLoss());
             stock.setNotes(stockDetails.getNotes());
@@ -122,9 +111,7 @@ public class StockController {
             stock.setUpdatedAt(LocalDateTime.now());
 
             Stock updatedStock = stockRepository.save(stock);
-            
-            // 填充名称
-            Optional<StockBasic> basic = stockBasicRepository.findBySymbol(updatedStock.getSymbol());
+            Optional<StockBasic> basic = stockBasicRepository.findByCode(updatedStock.getCode());
             basic.ifPresent(stockBasic -> updatedStock.setName(stockBasic.getName()));
 
             return ResponseEntity.ok(updatedStock);
@@ -139,6 +126,16 @@ public class StockController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+    
+    /**
+     * 搜索股票接口
+     */
+    @GetMapping("/search")
+    public List<StockBasic> searchStocks(@RequestParam String keyword) {
+        // 限制返回数量，防止数据量过大
+        List<StockBasic> results = stockBasicRepository.searchStocks(keyword);
+        return results.stream().limit(10).toList();
     }
 
     @GetMapping("/test")

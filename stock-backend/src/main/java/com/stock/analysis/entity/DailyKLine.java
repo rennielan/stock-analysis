@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "daily_k_lines", indexes = {
-    @Index(name = "idx_symbol_date", columnList = "symbol, trade_date", unique = true)
+    @Index(name = "idx_code_date", columnList = "code, trade_date", unique = true)
 })
 @Data
 public class DailyKLine {
@@ -16,6 +16,9 @@ public class DailyKLine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "code", nullable = false, length = 20)
+    private String code; // 统一使用 code (sh.600000)
 
     @Column(name = "symbol", nullable = false, length = 20)
     private String symbol;
