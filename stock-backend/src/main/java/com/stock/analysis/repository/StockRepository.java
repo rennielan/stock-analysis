@@ -142,6 +142,14 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
     @Transactional
     @Query("UPDATE Stock s SET s.isActive = false, s.updatedAt = CURRENT_TIMESTAMP WHERE s.id IN :ids")
     int softDeleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 重新激活股票
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE Stock s SET s.isActive = true, s.updatedAt = CURRENT_TIMESTAMP WHERE s.id = :id")
+    void reactivateStock(@Param("id") Long id);
     
     // 5. 统计查询
     

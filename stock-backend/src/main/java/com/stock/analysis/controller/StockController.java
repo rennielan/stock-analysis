@@ -40,6 +40,30 @@ public class StockController {
 
     @PostMapping
     public Stock createStock(@RequestBody Stock stock) {
+        // 1. 检查是否已存在该股票记录（无论是否活跃）
+        Optional<Stock> existingStock = stockRepository.findBySymbol(stock.getSymbol());
+        
+        if (existingStock.isPresent()) {
+            Stock existing = existingStock.get();
+            if (Boolean.TRUE.equals(existing.getIsActive())) {
+                // 如果已存在且活跃，不做任何操作，直接返回现有记录
+                // 填充名称返回
+                Optional<StockBasic> basic = stockBasicRepository.findBySymbol(existing.getSymbol());
+                basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
+                return existing;
+            } else {
+                // 如果已存在但不活跃（已软删除），重新激活
+                stockRepository.reactivateStock(existing.getId());
+                existing.setIsActive(true);
+                existing.setUpdatedAt(LocalDateTime.now());
+                // 填充名称返回
+                Optional<StockBasic> basic = stockBasicRepository.findBySymbol(existing.getSymbol());
+                basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
+                return existing;
+            }
+        }
+
+        // 2. 如果不存在，创建新记录
         stock.setCreatedAt(LocalDateTime.now());
         stock.setUpdatedAt(LocalDateTime.now());
         stock.setIsActive(true);
@@ -57,6 +81,13 @@ public class StockController {
         Optional<Stock> stockOptional = stockRepository.findById(id);
         if (stockOptional.isPresent()) {
             Stock stock = stockOptional.get();
+            // 确保只返回活跃的股票，或者根据业务需求决定是否返回已删除的
+            // 这里假设详情接口可以返回已删除的，或者前端应该处理404
+            // 如果严格要求只返回活跃的：
+            if (!Boolean.TRUE.equals(stock.getIsActive())) {
+                return ResponseEntity.notFound().build();
+            }
+            
             Optional<StockBasic> basic = stockBasicRepository.findBySymbol(stock.getSymbol());
             basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
             return ResponseEntity.ok(stock);
@@ -69,6 +100,11 @@ public class StockController {
         Optional<Stock> stockOptional = stockRepository.findById(id);
         if (stockOptional.isPresent()) {
             Stock stock = stockOptional.get();
+            
+            // 检查是否活跃
+            if (!Boolean.TRUE.equals(stock.getIsActive())) {
+                return ResponseEntity.notFound().build();
+            }
             
             // 更新非空字段或全部字段 (根据业务需求，这里假设前端发送完整对象，但做防空处理更安全)
             if (stockDetails.getSymbol() != null) stock.setSymbol(stockDetails.getSymbol());
