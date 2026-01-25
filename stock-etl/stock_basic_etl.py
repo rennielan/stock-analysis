@@ -88,8 +88,8 @@ def fetch_and_save_stock_basics():
         # 关键修改：保留股票(1)和指数(2)类型
         # 1：股票，2：指数，3：其它，4：可转债，5：ETF
         print(f"Total records before filtering: {len(result)}")
-        result = result[result['type'].isin(['1', '2'])]
-        print(f"Total records after filtering (type='1' or '2'): {len(result)}")
+        result = result[result['type'].isin(['1', '5'])]
+        print(f"Total records after filtering (type='1' or '5'): {len(result)}")
         
         # 提取 symbol (去掉 sh. sz. 前缀，方便关联)
         # 假设 code 格式为 sh.600000
