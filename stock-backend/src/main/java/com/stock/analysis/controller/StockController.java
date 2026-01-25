@@ -1,7 +1,9 @@
 package com.stock.analysis.controller;
 
+import com.stock.analysis.entity.DailyKLine;
 import com.stock.analysis.entity.Stock;
 import com.stock.analysis.entity.StockBasic;
+import com.stock.analysis.repository.DailyKLineRepository;
 import com.stock.analysis.repository.StockBasicRepository;
 import com.stock.analysis.repository.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,9 @@ public class StockController {
     @Autowired
     private StockBasicRepository stockBasicRepository;
 
+    @Autowired
+    private DailyKLineRepository dailyKLineRepository;
+
     @GetMapping
     public List<Stock> getAllStocks() {
         List<Stock> stocks = stockRepository.findByIsActiveTrue();
@@ -37,17 +42,45 @@ public class StockController {
     public Stock createStock(@RequestBody Stock stock) {
         // 1. 检查是否已存在该股票记录 (使用 code)
         Optional<Stock> existingStock = stockRepository.findByCode(stock.getCode());
+        System.out.println(stock);
+        
+        // 确保 symbol 存在 (如果前端只传了 code)
+        if (stock.getSymbol() == null && stock.getCode() != null && stock.getCode().contains(".")) {
+            stock.setSymbol(stock.getCode().split("\\.")[1]);
+        }
+
+        // 尝试从日线表获取最新数据更新当前价格 (使用 code)
+        Optional<DailyKLine> latestKLine = dailyKLineRepository.findLatestByCode(stock.getCode());
+        if (latestKLine.isPresent()) {
+            DailyKLine kLine = latestKLine.get();
+            stock.setCurrentPrice(kLine.getClosePrice());
+            stock.setChangePercent(kLine.getPctChg());
+        }
+        System.out.println(stock);
         
         if (existingStock.isPresent()) {
             Stock existing = existingStock.get();
+            
+            // 如果已存在，更新价格信息（无论是否活跃）
+            if (latestKLine.isPresent()) {
+                DailyKLine kLine = latestKLine.get();
+                existing.setCurrentPrice(kLine.getClosePrice());
+                existing.setChangePercent(kLine.getPctChg());
+            }
+
             if (Boolean.TRUE.equals(existing.getIsActive())) {
+                // 如果活跃，仅保存价格更新
+                stockRepository.save(existing);
+                
                 Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
                 basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
                 return existing;
             } else {
-                stockRepository.reactivateStock(existing.getId());
+                // 如果不活跃，重新激活并保存价格更新
                 existing.setIsActive(true);
                 existing.setUpdatedAt(LocalDateTime.now());
+                stockRepository.save(existing);
+                
                 Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
                 basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
                 return existing;
@@ -55,11 +88,6 @@ public class StockController {
         }
 
         // 2. 创建新记录
-        // 确保 symbol 存在 (如果前端只传了 code)
-        if (stock.getSymbol() == null && stock.getCode() != null && stock.getCode().contains(".")) {
-            stock.setSymbol(stock.getCode().split("\\.")[1]);
-        }
-        
         stock.setCreatedAt(LocalDateTime.now());
         stock.setUpdatedAt(LocalDateTime.now());
         stock.setIsActive(true);

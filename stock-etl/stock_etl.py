@@ -130,7 +130,7 @@ def update_stock_prices():
     try:
         with engine.connect() as conn:
             # 使用 code 查询
-            result = conn.execute(text("SELECT id, code FROM stocks WHERE is_active = 1"))
+            result = conn.execute(text("SELECT id, code FROM stock_basics"))
             stocks = result.fetchall()
             
         if not stocks:
