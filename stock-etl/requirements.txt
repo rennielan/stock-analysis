@@ -6,3 +6,4 @@ schedule
 requests
 yfinance
 baostock
+cryptography
