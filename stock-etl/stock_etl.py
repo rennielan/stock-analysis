@@ -265,6 +265,10 @@ def main():
     
     # 定时任务
     schedule.every().day.at("15:30").do(update_stock_prices)
+    schedule.every().day.at("17:30").do(update_stock_prices)
+    schedule.every().day.at("18:30").do(update_stock_prices)
+    schedule.every().day.at("19:30").do(update_stock_prices)
+    schedule.every().day.at("20:30").do(update_stock_prices)
     schedule.every().day.at("02:00").do(stock_basic_etl.fetch_and_save_stock_basics)
     
     # 新增：每 10 秒检查一次是否有新添加的股票需要初始化数据
