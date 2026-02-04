@@ -31,7 +31,6 @@ public class StockController {
     public List<Stock> getAllStocks() {
         List<Stock> stocks = stockRepository.findByIsActiveTrue();
         for (Stock stock : stocks) {
-            // 使用 code 关联
             Optional<StockBasic> basic = stockBasicRepository.findByCode(stock.getCode());
             basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
         }
@@ -40,28 +39,22 @@ public class StockController {
 
     @PostMapping
     public Stock createStock(@RequestBody Stock stock) {
-        // 1. 检查是否已存在该股票记录 (使用 code)
         Optional<Stock> existingStock = stockRepository.findByCode(stock.getCode());
-        System.out.println(stock);
         
-        // 确保 symbol 存在 (如果前端只传了 code)
         if (stock.getSymbol() == null && stock.getCode() != null && stock.getCode().contains(".")) {
             stock.setSymbol(stock.getCode().split("\\.")[1]);
         }
 
-        // 尝试从日线表获取最新数据更新当前价格 (使用 code)
         Optional<DailyKLine> latestKLine = dailyKLineRepository.findLatestByCode(stock.getCode());
         if (latestKLine.isPresent()) {
             DailyKLine kLine = latestKLine.get();
             stock.setCurrentPrice(kLine.getClosePrice());
             stock.setChangePercent(kLine.getPctChg());
         }
-        System.out.println(stock);
         
         if (existingStock.isPresent()) {
             Stock existing = existingStock.get();
             
-            // 如果已存在，更新价格信息（无论是否活跃）
             if (latestKLine.isPresent()) {
                 DailyKLine kLine = latestKLine.get();
                 existing.setCurrentPrice(kLine.getClosePrice());
@@ -69,25 +62,20 @@ public class StockController {
             }
 
             if (Boolean.TRUE.equals(existing.getIsActive())) {
-                // 如果活跃，仅保存价格更新
                 stockRepository.save(existing);
-                
                 Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
                 basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
                 return existing;
             } else {
-                // 如果不活跃，重新激活并保存价格更新
                 existing.setIsActive(true);
                 existing.setUpdatedAt(LocalDateTime.now());
                 stockRepository.save(existing);
-                
                 Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
                 basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
                 return existing;
             }
         }
 
-        // 2. 创建新记录
         stock.setCreatedAt(LocalDateTime.now());
         stock.setUpdatedAt(LocalDateTime.now());
         stock.setIsActive(true);
@@ -123,18 +111,26 @@ public class StockController {
                 return ResponseEntity.notFound().build();
             }
             
-            // 更新字段
-            if (stockDetails.getCode() != null) stock.setCode(stockDetails.getCode());
-            if (stockDetails.getSymbol() != null) stock.setSymbol(stockDetails.getSymbol());
-            if (stockDetails.getCurrentPrice() != null) stock.setCurrentPrice(stockDetails.getCurrentPrice());
-            if (stockDetails.getChangePercent() != null) stock.setChangePercent(stockDetails.getChangePercent());
+            // 关键修改：只更新用户可编辑的字段，忽略价格等由ETL维护的字段
+            // 这样可以防止前端旧数据覆盖ETL的新数据
+            
+            // 策略相关
             if (stockDetails.getStrategy() != null) stock.setStrategy(stockDetails.getStrategy());
             
+            // 价格计划相关 (允许更新为 null，如果前端传了 null)
+            // 注意：这里假设前端传的是全量用户编辑字段。如果前端传 null，意味着用户清空了该值。
+            // 如果前端没传（即为 null），也会被清空吗？
+            // 由于我们现在是全量提交（StockCard 提交完整的 localData），所以 stockDetails 中的字段就是用户当前看到的。
+            // 如果用户清空了输入框，前端传 null，这里就应该设为 null。
+            
+            stock.setBuyPrice(stockDetails.getBuyPrice());
             stock.setTargetPrice(stockDetails.getTargetPrice());
             stock.setStopLoss(stockDetails.getStopLoss());
             stock.setNotes(stockDetails.getNotes());
             
             if (stockDetails.getConfidence() != null) stock.setConfidence(stockDetails.getConfidence());
+            
+            // 忽略 currentPrice, changePercent, code, symbol 等字段的更新
             
             stock.setUpdatedAt(LocalDateTime.now());
 
@@ -156,12 +152,8 @@ public class StockController {
         return ResponseEntity.notFound().build();
     }
     
-    /**
-     * 搜索股票接口
-     */
     @GetMapping("/search")
     public List<StockBasic> searchStocks(@RequestParam String keyword) {
-        // 限制返回数量，防止数据量过大
         List<StockBasic> results = stockBasicRepository.searchStocks(keyword);
         return results.stream().limit(10).toList();
     }

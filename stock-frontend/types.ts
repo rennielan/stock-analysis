@@ -15,6 +15,7 @@ export interface StockData {
   
   // User Editable Plan
   strategy: StrategyType;
+  buyPrice: string;    // 买入价
   targetPrice: string; // Keep as string for input handling, parse for calc
   stopLoss: string;    // Keep as string for input handling
   confidence: number;  // 1-5

@@ -11,6 +11,7 @@ const transformToFrontend = (data: any): StockData => ({
   currentPrice: data.currentPrice,
   changePercent: data.changePercent,
   strategy: data.strategy as StrategyType,
+  buyPrice: data.buyPrice !== null ? String(data.buyPrice) : '',
   targetPrice: data.targetPrice !== null ? String(data.targetPrice) : '',
   stopLoss: data.stopLoss !== null ? String(data.stopLoss) : '',
   confidence: data.confidence,
@@ -22,6 +23,7 @@ const transformToBackend = (data: Partial<StockData>): any => {
   const payload: any = { ...data };
 
   // Convert empty strings to null for numeric fields
+  if (payload.buyPrice === '') payload.buyPrice = null;
   if (payload.targetPrice === '') payload.targetPrice = null;
   if (payload.stopLoss === '') payload.stopLoss = null;
 

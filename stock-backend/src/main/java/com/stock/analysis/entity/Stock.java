@@ -36,6 +36,9 @@ public class Stock {
     @Column(name = "strategy", nullable = false)
     private StrategyType strategy = StrategyType.WATCH;
     
+    @Column(name = "buy_price", precision = 10, scale = 4)
+    private BigDecimal buyPrice; // 买入价
+
     @Column(name = "target_price", precision = 10, scale = 4)
     private BigDecimal targetPrice;
     
@@ -77,6 +80,7 @@ public class Stock {
                 ", currentPrice=" + currentPrice +
                 ", changePercent=" + changePercent +
                 ", strategy=" + strategy +
+                ", buyPrice=" + buyPrice +
                 ", targetPrice=" + targetPrice +
                 ", stopLoss=" + stopLoss +
                 ", confidence=" + confidence +

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { ExternalLink, Trash2, TrendingUp, TrendingDown, Target, ShieldAlert, Save } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { ExternalLink, Trash2, TrendingUp, TrendingDown, Target, ShieldAlert, DollarSign } from 'lucide-react';
 import { StockData, StrategyType, STRATEGY_CONFIG } from '../types';
 import { calculateRiskReward } from '../utils';
 import StarRating from './StarRating';
@@ -11,21 +11,18 @@ interface StockCardProps {
 }
 
 const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
-  const [isUpdating, setIsUpdating] = useState(false);
   const [localData, setLocalData] = useState(data);
 
   // Sync local state when prop data changes (e.g. from ETL update)
-  // But only if we are not currently editing/saving to avoid overwriting user input
-  React.useEffect(() => {
-    if (!isUpdating) {
-      setLocalData(data);
-    }
-  }, [data, isUpdating]);
+  useEffect(() => {
+    setLocalData(data);
+  }, [data]);
 
   // Calculate R:R
   const rrRatio = useMemo(() => {
-    return calculateRiskReward(localData.currentPrice, localData.targetPrice, localData.stopLoss);
-  }, [localData.currentPrice, localData.targetPrice, localData.stopLoss]);
+    const entryPrice = localData.buyPrice ? parseFloat(localData.buyPrice) : localData.currentPrice;
+    return calculateRiskReward(entryPrice, localData.targetPrice, localData.stopLoss);
+  }, [localData.currentPrice, localData.buyPrice, localData.targetPrice, localData.stopLoss]);
 
   // Calculate Distance (Upside/Downside to Target)
   const distanceToTarget = useMemo(() => {
@@ -37,24 +34,26 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
 
   const priceColor = localData.changePercent >= 0 ? 'text-emerald-400' : 'text-rose-400';
   
-  const handleLocalChange = (field: keyof StockData, value: string | number | StrategyType) => {
-    setLocalData(prev => ({ ...prev, [field]: value }));
+  // 立即更新（用于下拉框和评分）
+  const handleImmediateChange = (field: keyof StockData, value: string | number | StrategyType) => {
+    const newData = { ...localData, [field]: value };
+    setLocalData(newData);
+    // 发送全量数据
+    onUpdate(data.id, newData);
   };
 
-  const handleSave = async () => {
-    setIsUpdating(true);
-    try {
-      // Construct updates object
-      const updates: Partial<StockData> = {
-        strategy: localData.strategy,
-        targetPrice: localData.targetPrice,
-        stopLoss: localData.stopLoss,
-        confidence: localData.confidence,
-        notes: localData.notes
-      };
-      await onUpdate(data.id, updates);
-    } finally {
-      setIsUpdating(false);
+  // 失去焦点或回车时更新（用于文本框）
+  const handleBlurOrEnter = (field: keyof StockData, value: string) => {
+    if (value !== data[field]) {
+      // 发送全量数据
+      const newData = { ...localData, [field]: value };
+      onUpdate(data.id, newData);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, field: keyof StockData, value: string) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur(); // 触发 blur 事件
     }
   };
 
@@ -90,7 +89,7 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
       <td className="p-4 align-top">
         <select
           value={localData.strategy}
-          onChange={(e) => handleLocalChange('strategy', e.target.value as StrategyType)}
+          onChange={(e) => handleImmediateChange('strategy', e.target.value as StrategyType)}
           className={`bg-transparent text-xs font-medium py-1 px-2 rounded border focus:outline-none cursor-pointer ${STRATEGY_CONFIG[localData.strategy].color}`}
         >
           {Object.values(StrategyType).map((strat) => (
@@ -101,16 +100,31 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
         </select>
       </td>
 
-      {/* 4. PLAN (Target & Stop stacked) */}
+      {/* 4. PLAN (Buy, Target & Stop stacked) */}
       <td className="p-4 align-top">
         <div className="flex flex-col gap-2 w-32">
+          {/* Buy Price */}
+          <div className="flex items-center group/input">
+            <DollarSign size={12} className="text-blue-500/50 mr-2 shrink-0 group-focus-within/input:text-blue-500" />
+            <input
+              type="number"
+              value={localData.buyPrice || ''}
+              onChange={(e) => setLocalData({ ...localData, buyPrice: e.target.value })}
+              onBlur={(e) => handleBlurOrEnter('buyPrice', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, 'buyPrice', localData.buyPrice)}
+              placeholder="买入价"
+              className="w-full bg-transparent border-0 border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-blue-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
+            />
+          </div>
           {/* Target */}
           <div className="flex items-center group/input">
             <Target size={12} className="text-emerald-500/50 mr-2 shrink-0 group-focus-within/input:text-emerald-500" />
             <input 
               type="number"
               value={localData.targetPrice}
-              onChange={(e) => handleLocalChange('targetPrice', e.target.value)}
+              onChange={(e) => setLocalData({ ...localData, targetPrice: e.target.value })}
+              onBlur={(e) => handleBlurOrEnter('targetPrice', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, 'targetPrice', localData.targetPrice)}
               placeholder="目标价"
               className="w-full bg-transparent border-0 border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-emerald-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
             />
@@ -121,7 +135,9 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
             <input 
               type="number"
               value={localData.stopLoss}
-              onChange={(e) => handleLocalChange('stopLoss', e.target.value)}
+              onChange={(e) => setLocalData({ ...localData, stopLoss: e.target.value })}
+              onBlur={(e) => handleBlurOrEnter('stopLoss', e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, 'stopLoss', localData.stopLoss)}
               placeholder="止损价"
               className="w-full bg-transparent border-0 border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-rose-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
             />
@@ -154,7 +170,7 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
 
       {/* 7. CONVICTION */}
       <td className="p-4 align-top">
-        <StarRating value={localData.confidence} onChange={(val) => handleLocalChange('confidence', val)} />
+        <StarRating value={localData.confidence} onChange={(val) => handleImmediateChange('confidence', val)} />
       </td>
 
       {/* 8. NOTES */}
@@ -162,7 +178,9 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
         <input 
           type="text"
           value={localData.notes}
-          onChange={(e) => handleLocalChange('notes', e.target.value)}
+          onChange={(e) => setLocalData({ ...localData, notes: e.target.value })}
+          onBlur={(e) => handleBlurOrEnter('notes', e.target.value)}
+          onKeyDown={(e) => handleKeyDown(e, 'notes', localData.notes)}
           placeholder="添加逻辑/备注..."
           className="w-full min-w-[140px] bg-transparent text-sm text-slate-300 placeholder-slate-700 border-0 focus:ring-0 px-0 py-0 transition-all focus:placeholder-slate-600"
         />
@@ -171,14 +189,6 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
       {/* 9. ACTIONS */}
       <td className="p-4 align-top text-right">
         <div className="flex items-center justify-end gap-1">
-          <button
-            onClick={handleSave}
-            disabled={isUpdating}
-            className="text-slate-600 hover:text-emerald-500 p-1.5 rounded-md hover:bg-emerald-950/30 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-50"
-            title="保存更改"
-          >
-            <Save size={16} />
-          </button>
           <button
             onClick={() => onRemove(data.id)}
             className="text-slate-600 hover:text-rose-500 p-1.5 rounded-md hover:bg-rose-950/30 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
