@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { ExternalLink, Trash2, TrendingUp, TrendingDown, Target, ShieldAlert, DollarSign } from 'lucide-react';
+import { ExternalLink, Trash2, DollarSign, Target, ShieldAlert } from 'lucide-react';
 import { StockData, StrategyType, STRATEGY_CONFIG } from '../types';
 import { calculateRiskReward } from '../utils';
 import StarRating from './StarRating';
@@ -100,46 +100,54 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
         </select>
       </td>
 
-      {/* 4. PLAN (Buy, Target & Stop stacked) */}
+      {/* 4. PLAN (Buy, Target & Stop horizontal) */}
       <td className="p-4 align-top">
-        <div className="flex flex-col gap-2 w-32">
+        <div className="flex items-center gap-4">
           {/* Buy Price */}
-          <div className="flex items-center group/input">
-            <DollarSign size={12} className="text-blue-500/50 mr-2 shrink-0 group-focus-within/input:text-blue-500" />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono uppercase">
+              <DollarSign size={10} /> 买入
+            </div>
             <input
               type="number"
               value={localData.buyPrice || ''}
               onChange={(e) => setLocalData({ ...localData, buyPrice: e.target.value })}
               onBlur={(e) => handleBlurOrEnter('buyPrice', e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, 'buyPrice', localData.buyPrice)}
-              placeholder="买入价"
-              className="w-full bg-transparent border-0 border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-blue-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
+              placeholder="-"
+              className="w-20 bg-transparent border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-blue-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
             />
           </div>
+          
           {/* Target */}
-          <div className="flex items-center group/input">
-            <Target size={12} className="text-emerald-500/50 mr-2 shrink-0 group-focus-within/input:text-emerald-500" />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono uppercase">
+              <Target size={10} /> 目标
+            </div>
             <input 
               type="number"
               value={localData.targetPrice}
               onChange={(e) => setLocalData({ ...localData, targetPrice: e.target.value })}
               onBlur={(e) => handleBlurOrEnter('targetPrice', e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, 'targetPrice', localData.targetPrice)}
-              placeholder="目标价"
-              className="w-full bg-transparent border-0 border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-emerald-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
+              placeholder="-"
+              className="w-20 bg-transparent border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-emerald-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
             />
           </div>
+
           {/* Stop */}
-          <div className="flex items-center group/input">
-            <ShieldAlert size={12} className="text-rose-500/50 mr-2 shrink-0 group-focus-within/input:text-rose-500" />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-mono uppercase">
+              <ShieldAlert size={10} /> 止损
+            </div>
             <input 
               type="number"
               value={localData.stopLoss}
               onChange={(e) => setLocalData({ ...localData, stopLoss: e.target.value })}
               onBlur={(e) => handleBlurOrEnter('stopLoss', e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, 'stopLoss', localData.stopLoss)}
-              placeholder="止损价"
-              className="w-full bg-transparent border-0 border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-rose-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
+              placeholder="-"
+              className="w-20 bg-transparent border-b border-slate-800 text-sm text-slate-200 font-mono focus:border-rose-500 focus:ring-0 px-0 py-0.5 placeholder-slate-700 transition-colors"
             />
           </div>
         </div>

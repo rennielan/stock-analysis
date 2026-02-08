@@ -5,13 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/resources/application-dev.yml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/resources/application-dev.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-etl/stock_basic_etl.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/stock_basic_etl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-etl/stock_etl.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/stock_etl.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/components/StockCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/components/StockCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/package-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,6 +108,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="" />
+      <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -125,6 +127,7 @@
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="RUN_TOOL" value="" />
       <method v="2" />
     </configuration>
   </component>

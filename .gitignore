@@ -67,6 +67,7 @@ Thumbs.db
 # Java 相关
 # ================================
 target/
+stock-backend/target
 *.jar
 *.war
 *.ear
@@ -100,3 +101,14 @@ venv.bak/
 # ================================
 coverage/
 .nyc_output/
+
+# ================================
+# MYSQL
+# ================================
+data/
+# Dockerfile*
+# docker-compose*.yml
+
+.idea/workspace.xml
+*.jar
+*.original

@@ -14,7 +14,7 @@ import stock_basic_etl
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '3306')
 DB_USER = os.getenv('DB_USERNAME', 'root')
-DB_PASS = os.getenv('DB_PASSWORD', 'M_wandering1')
+DB_PASS = os.getenv('DB_PASSWORD', 'root')
 DB_NAME = os.getenv('DB_NAME', 'stock_db')
 
 print(f"Connecting to database at {DB_HOST}:{DB_PORT} as {DB_USER}")
