@@ -2,6 +2,12 @@ import { StockData, StrategyType } from '../types';
 
 const API_BASE_URL = '/api/stocks';
 
+// Compute daily P&L = marketValue * changePercent / (100 + changePercent)
+const computeDailyProfitLoss = (marketValue: number, changePercent: number): number => {
+  if (!marketValue || !changePercent) return 0;
+  return Math.round((marketValue * changePercent / (100 + changePercent)) * 100) / 100;
+};
+
 // Helper to convert Backend format to Frontend format
 const transformToFrontend = (data: any): StockData => ({
   id: String(data.id),
@@ -24,6 +30,7 @@ const transformToFrontend = (data: any): StockData => ({
   profitLoss: data.profitLoss,
   profitLossRatio: data.profitLossRatio,
   perShareProfitLoss: data.perShareProfitLoss,
+  dailyProfitLoss: data.dailyProfitLoss ?? computeDailyProfitLoss(data.marketValue, data.changePercent),
   // 映射交易记录字段
   tradeRecords: data.tradeRecords ? data.tradeRecords.map((t: any) => ({
     id: t.orderNumber || t.id,

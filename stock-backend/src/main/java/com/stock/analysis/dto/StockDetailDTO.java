@@ -36,6 +36,9 @@ public class StockDetailDTO {
     private BigDecimal profitLossRatio;
     private BigDecimal perShareProfitLoss;
 
+    // 当日盈亏（后端计算）
+    private BigDecimal dailyProfitLoss;
+
     // 用户可编辑字段
     private BigDecimal buyPrice;
     private BigDecimal targetPrice;
@@ -135,6 +138,9 @@ public class StockDetailDTO {
 
     public BigDecimal getPerShareProfitLoss() { return perShareProfitLoss; }
     public void setPerShareProfitLoss(BigDecimal perShareProfitLoss) { this.perShareProfitLoss = perShareProfitLoss; }
+
+    public BigDecimal getDailyProfitLoss() { return dailyProfitLoss; }
+    public void setDailyProfitLoss(BigDecimal dailyProfitLoss) { this.dailyProfitLoss = dailyProfitLoss; }
 
     public BigDecimal getBuyPrice() { return buyPrice; }
     public void setBuyPrice(BigDecimal buyPrice) { this.buyPrice = buyPrice; }

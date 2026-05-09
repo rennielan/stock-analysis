@@ -5,34 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96d7f774-45aa-46b9-8ec8-4db4622eb566" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/mysql-init/02-create-trade-records.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/TradeRecordController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/HistoryKLine.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/TradeRecord.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/HistoryKLineRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/TradeRecordRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/service/OcrService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-etl/baostock_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/stock-frontend/components/TradeUpload.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/交割单_20260508_232211.xls" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/持仓_20260509_104147.xls" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/controller/StockController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/entity/Stock.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockBasicRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockBasicRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/repository/StockRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/resources/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/classes/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/classes/application.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar.original" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/target/stock-backend-3.2.2.jar.original" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-etl/stock_etl.py" beforeDir="false" afterPath="$PROJECT_DIR$/stock-etl/stock_etl.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/dto/StockDetailDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/stock-backend/src/main/java/com/stock/analysis/dto/StockDetailDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/components/StockCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/components/StockCard.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stock-frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/services/stockApi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/stock-frontend/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/stock-frontend/types.ts" afterDir="false" />
     </list>

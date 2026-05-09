@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,6 +71,18 @@ public class StockController {
                 dto.setProfitLoss(view.getProfitLoss());
                 dto.setProfitLossRatio(view.getProfitLossRatio());
                 dto.setPerShareProfitLoss(view.getPerShareProfitLoss());
+            }
+            
+            // 当日盈亏 = 市值 × 涨跌幅 / (100 + 涨跌幅)
+            BigDecimal marketVal = view != null ? view.getMarketValue() : BigDecimal.ZERO;
+            BigDecimal changePct = stock.getChangePercent();
+            if (marketVal.compareTo(BigDecimal.ZERO) > 0 && changePct != null) {
+                BigDecimal denominator = BigDecimal.valueOf(100).add(changePct);
+                if (denominator.compareTo(BigDecimal.ZERO) != 0) {
+                    BigDecimal dailyPL = marketVal.multiply(changePct)
+                            .divide(denominator, 2, RoundingMode.HALF_UP);
+                    dto.setDailyProfitLoss(dailyPL);
+                }
             }
             
             // 用户可编辑字段

@@ -15,6 +15,43 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [uploadMode, setUploadMode] = useState<'none' | 'trade' | 'holding'>('none');
 
+  // --- Sort State ---
+  type SortField = 'marketValue' | 'referenceShares' | 'profitLoss' | 'dailyProfitLoss';
+  const [sortField, setSortField] = useState<SortField>('marketValue');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const sortedStocks = [...stocks].sort((a, b) => {
+    const valA = a[sortField] ?? 0;
+    const valB = b[sortField] ?? 0;
+    return sortDirection === 'asc'
+      ? (valA as number) - (valB as number)
+      : (valB as number) - (valA as number);
+  });
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <span className="ml-1 opacity-30">⇅</span>;
+    return <span className="ml-1">{sortDirection === 'asc' ? '▲' : '▼'}</span>;
+  };
+
+  const sortableTh = (field: SortField, label: string, width: string) => (
+    <th
+      className={`p-4 ${width} cursor-pointer select-none hover:text-slate-300 transition-colors ${sortField === field ? 'text-slate-300' : ''}`}
+      onClick={() => handleSort(field)}
+    >
+      {label}
+      <SortIcon field={field} />
+    </th>
+  );
+
   // --- Data Fetching ---
   useEffect(() => {
     fetchStocks();
@@ -197,23 +234,21 @@ const App: React.FC = () => {
               </div>
             ) : (
               <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/50 shadow-sm ring-1 ring-white/5">
-                <table className="w-full text-left border-collapse table-fixed">
+                <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-900/50 text-[10px] uppercase tracking-wider text-slate-500 font-semibold font-mono">
-                      <th className="p-4 w-22">名称</th>
-                      <th className="p-4 w-28">价格</th>
+                      {sortableTh('marketValue', '名称', 'w-20')}
                       <th className="p-4 w-48">交易计划</th>
-                      <th className="p-4 w-28">持仓</th>
-                      <th className="p-4 w-32">成本</th>
-                      <th className="p-4 w-28">市值</th>
-                      <th className="p-4 w-28">盈亏</th>
-                      <th className="p-4 w-32">盈亏%</th>
+                      {sortableTh('referenceShares', '持仓', 'w-28')}
+                      <th className="p-4 w-28">成本/现价</th>
+                      {sortableTh('profitLoss', '盈亏', 'w-28')}
+                      {sortableTh('dailyProfitLoss', '当日盈亏', 'w-32')}
                       <th className="p-4 w-40">备注</th>
                       <th className="p-4 w-12"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
-                    {stocks.map(stock => (
+                    {sortedStocks.map(stock => (
                       <StockRow
                         key={stock.id}
                         data={stock}

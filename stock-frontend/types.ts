@@ -39,6 +39,7 @@ export interface StockData {
   profitLoss?: number;              // 持仓盈亏 (衍生字段)
   profitLossRatio?: number;         // 盈亏比例 (衍生字段)
   perShareProfitLoss?: number;      // 单股盈亏 (衍生字段)
+  dailyProfitLoss?: number;         // 当日盈亏
 
   // Trades
   tradeRecords?: TradeRecord[];

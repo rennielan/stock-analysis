@@ -55,17 +55,17 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
               </a>
             </div>
             <span className="text-xs text-slate-500 font-mono mt-0.5">{data.symbol}</span>
+            {data.marketValue ? (
+              <div className="font-bold text-sm text-slate-100 mt-1.5 font-mono">
+                {data.marketValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            ) : (
+              <span className="text-slate-700 text-xs mt-1.5">-</span>
+            )}
           </div>
         </td>
 
-        <td className="p-4 align-top">
-          <div className="font-mono text-slate-200">${data.currentPrice.toFixed(2)}</div>
-          <div className={`text-xs flex items-center gap-1 ${priceColor}`}>
-            {data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%
-          </div>
-        </td>
-
-        {/* 3. PLAN (Buy, Target & Stop horizontal) */}
+        {/* 2. PLAN (Buy, Target) */}
         <td className="p-4 align-top">
           <div className="flex items-center gap-4">
             {/* Buy Price */}
@@ -102,7 +102,7 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
           </div>
         </td>
 
-        {/* 5. HOLDINGS INFO - 持仓信息 */}
+        {/* 3. HOLDINGS INFO - 持仓信息 */}
         <td className="p-4 align-top">
           {data.referenceShares ? (
             <div className="font-mono text-sm text-slate-200">
@@ -113,29 +113,25 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
           )}
         </td>
 
-        {/* 8. COST PRICE - 成本价 */}
+        {/* 4. COST / CURRENT PRICE - 成本/现价 */}
         <td className="p-4 align-top">
           {data.costPrice ? (
             <div className="font-mono text-sm text-slate-200">
-              ¥{data.costPrice.toFixed(4)}
+              {data.costPrice.toFixed(4)}
             </div>
           ) : (
             <span className="text-slate-700 text-xs">-</span>
           )}
-        </td>
-
-        {/* 9. MARKET VALUE - 市值 */}
-        <td className="p-4 align-top">
-          {data.marketValue ? (
-            <div className="font-mono text-sm text-slate-200">
-              {data.marketValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {data.currentPrice ? (
+            <div className="font-mono text-sm text-slate-200 mt-0.5">
+              {data.currentPrice.toFixed(4)}
             </div>
           ) : (
-            <span className="text-slate-700 text-xs">-</span>
+            <span className="text-slate-700 text-xs mt-0.5">-</span>
           )}
         </td>
 
-        {/* 10. PROFIT/LOSS - 盈亏 */}
+        {/* 5. PROFIT/LOSS - 盈亏 */}
         <td className="p-4 align-top">
           {data.profitLoss !== undefined && data.profitLoss !== 0 ? (
             <div className={`font-mono text-sm font-medium ${data.profitLoss > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -144,12 +140,8 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
           ) : (
             <span className="text-slate-700 text-xs">-</span>
           )}
-        </td>
-
-        {/* 11. PROFIT/LOSS RATIO - 盈亏比例 */}
-        <td className="p-4 align-top">
           {data.profitLossRatio !== undefined && data.profitLossRatio !== 0 ? (
-            <div className={`font-mono text-sm font-medium ${data.profitLossRatio > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <div className={`font-mono text-xs mt-0.5 ${data.profitLossRatio > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {data.profitLossRatio > 0 ? '+' : ''}{data.profitLossRatio.toFixed(2)}%
             </div>
           ) : (
@@ -157,7 +149,21 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
           )}
         </td>
 
-        {/* 12. NOTES & TRADES TOGGLE */}
+        {/* 6. DAILY P&L - 当日盈亏 */}
+        <td className="p-4 align-top">
+          {data.dailyProfitLoss !== undefined && data.dailyProfitLoss !== 0 ? (
+            <div className={`font-mono text-sm font-medium ${data.dailyProfitLoss > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {data.dailyProfitLoss > 0 ? '+' : ''}{data.dailyProfitLoss.toFixed(2)}
+            </div>
+          ) : (
+            <span className="text-slate-700 text-xs">-</span>
+          )}
+          <div className={`font-mono text-xs mt-0.5 ${priceColor}`}>
+            {data.changePercent >= 0 ? '+' : ''}{data.changePercent.toFixed(2)}%
+          </div>
+        </td>
+
+        {/* 7. NOTES & TRADES TOGGLE */}
         <td className="p-4 align-top">
           <div className="flex flex-col gap-2">
             <input
@@ -181,7 +187,7 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
           </div>
         </td>
 
-        {/* 13. ACTIONS */}
+        {/* 8. ACTIONS */}
         <td className="p-4 align-top text-right">
           <div className="flex items-center justify-end gap-1">
             <button
@@ -198,7 +204,7 @@ const StockRow: React.FC<StockCardProps> = ({ data, onUpdate, onRemove }) => {
       {/* Expanded Trade Records Row */}
       {showTrades && hasTrades && (
         <tr className="bg-slate-900/60 border-b border-slate-800/50">
-          <td colSpan={10} className="p-4 pl-12">
+          <td colSpan={8} className="p-4 pl-12">
             <div className="bg-slate-950 rounded-lg border border-slate-800 overflow-hidden">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-800">
