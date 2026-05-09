@@ -9,7 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -23,3 +23,7 @@ server:
 logging:
   level:
     com.stock.analysis: DEBUG
+
+alibaba:
+  dashscope:
+    api-key: sk-2f75606667e844b4bcd8a03bd59f7f09

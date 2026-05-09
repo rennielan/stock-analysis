@@ -15,7 +15,26 @@ const transformToFrontend = (data: any): StockData => ({
   targetPrice: data.targetPrice !== null ? String(data.targetPrice) : '',
   stopLoss: data.stopLoss !== null ? String(data.stopLoss) : '',
   confidence: data.confidence,
-  notes: data.notes || ''
+  notes: data.notes || '',
+  // Holdings (持仓信息)
+  referenceShares: data.referenceShares ?? null,
+  costPrice: data.costPrice ?? null,
+  marketValue: data.marketValue,
+  totalCost: data.totalCost,
+  profitLoss: data.profitLoss,
+  profitLossRatio: data.profitLossRatio,
+  perShareProfitLoss: data.perShareProfitLoss,
+  // 映射交易记录字段
+  tradeRecords: data.tradeRecords ? data.tradeRecords.map((t: any) => ({
+    id: t.orderNumber || t.id,
+    stockName: t.stockName,
+    tradeTime: t.tradeTime,
+    quantity: t.quantity,
+    businessName: t.businessName,
+    tradeDirection: t.businessName,
+    tradePrice: t.tradePrice,
+    totalAmount: t.tradeAmount ?? t.totalAmount,
+  })) : undefined
 });
 
 // Helper to convert Frontend format to Backend format

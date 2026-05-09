@@ -1,165 +1,156 @@
 package com.stock.analysis.controller;
 
-import com.stock.analysis.entity.DailyKLine;
+import com.stock.analysis.dto.StockDetailDTO;
 import com.stock.analysis.entity.Stock;
-import com.stock.analysis.entity.StockBasic;
-import com.stock.analysis.repository.DailyKLineRepository;
-import com.stock.analysis.repository.StockBasicRepository;
+import com.stock.analysis.entity.StockHoldingView;
+import com.stock.analysis.entity.StrategyType;
+import com.stock.analysis.repository.StockHoldingViewRepository;
 import com.stock.analysis.repository.StockRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/stocks")
+@CrossOrigin(origins = "*")
 public class StockController {
+
+    private static final Logger logger = LoggerFactory.getLogger(StockController.class);
 
     @Autowired
     private StockRepository stockRepository;
-
+    
     @Autowired
-    private StockBasicRepository stockBasicRepository;
-
-    @Autowired
-    private DailyKLineRepository dailyKLineRepository;
+    private StockHoldingViewRepository stockHoldingViewRepository;
 
     @GetMapping
-    public List<Stock> getAllStocks() {
+    public List<StockDetailDTO> getAllStocks() {
+        // 1. 获取带有交易记录的股票数据（使用 @EntityGraph 预加载 tradeRecords）
         List<Stock> stocks = stockRepository.findByIsActiveTrue();
-        for (Stock stock : stocks) {
-            Optional<StockBasic> basic = stockBasicRepository.findByCode(stock.getCode());
-            basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
-        }
-        return stocks;
+        
+        // 2. 获取视图数据（包含市场价值、盈亏等衍生字段）
+        List<StockHoldingView> views = stockHoldingViewRepository.findByIsActiveTrue();
+        
+        // 3. 建立视图 id -> StockHoldingView 映射，用于合并
+        Map<Long, StockHoldingView> viewMap = views.stream()
+                .collect(Collectors.toMap(StockHoldingView::getId, v -> v));
+        
+        // 4. 合并数据
+        return stocks.stream().map(stock -> {
+            StockHoldingView view = viewMap.get(stock.getId());
+            StockDetailDTO dto = new StockDetailDTO();
+            
+            // 基础字段
+            dto.setId(stock.getId());
+            dto.setCode(stock.getCode());
+            dto.setSymbol(stock.getSymbol());
+            dto.setName(stock.getName());
+            dto.setCurrentPrice(stock.getCurrentPrice());
+            dto.setChangePercent(stock.getChangePercent());
+            dto.setStrategy(stock.getStrategy());
+            dto.setIsActive(stock.getIsActive());
+            
+            // 持仓信息（优先从视图取，如果视图不存在则从 Stock 实体取）
+            dto.setCostPrice(view != null ? view.getCostPrice() : stock.getCostPrice());
+            dto.setReferenceShares(view != null ? view.getReferenceShares() : stock.getReferenceShares());
+            
+            // 衍生字段（仅视图拥有）
+            if (view != null) {
+                dto.setMarketValue(view.getMarketValue());
+                dto.setTotalCost(view.getTotalCost());
+                dto.setProfitLoss(view.getProfitLoss());
+                dto.setProfitLossRatio(view.getProfitLossRatio());
+                dto.setPerShareProfitLoss(view.getPerShareProfitLoss());
+            }
+            
+            // 用户可编辑字段
+            dto.setBuyPrice(stock.getBuyPrice());
+            dto.setTargetPrice(stock.getTargetPrice());
+            dto.setStopLoss(stock.getStopLoss());
+            dto.setConfidence(stock.getConfidence());
+            dto.setNotes(stock.getNotes());
+            
+            // 时间
+            dto.setCreatedAt(stock.getCreatedAt());
+            dto.setUpdatedAt(stock.getUpdatedAt());
+            
+            // 交易记录
+            dto.setTradeRecords(stock.getTradeRecords());
+            
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @PostMapping
     public Stock createStock(@RequestBody Stock stock) {
-        Optional<Stock> existingStock = stockRepository.findByCode(stock.getCode());
-        
-        if (stock.getSymbol() == null && stock.getCode() != null && stock.getCode().contains(".")) {
-            stock.setSymbol(stock.getCode().split("\\.")[1]);
+        // 检查是否已存在相同 code 的股票
+        if (stockRepository.findByCode(stock.getCode()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "股票代码已存在: " + stock.getCode());
         }
-
-        Optional<DailyKLine> latestKLine = dailyKLineRepository.findLatestByCode(stock.getCode());
-        if (latestKLine.isPresent()) {
-            DailyKLine kLine = latestKLine.get();
-            stock.setCurrentPrice(kLine.getClosePrice());
-            stock.setChangePercent(kLine.getPctChg());
-        }
-        
-        if (existingStock.isPresent()) {
-            Stock existing = existingStock.get();
-            
-            if (latestKLine.isPresent()) {
-                DailyKLine kLine = latestKLine.get();
-                existing.setCurrentPrice(kLine.getClosePrice());
-                existing.setChangePercent(kLine.getPctChg());
-            }
-
-            if (Boolean.TRUE.equals(existing.getIsActive())) {
-                stockRepository.save(existing);
-                Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
-                basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
-                return existing;
-            } else {
-                existing.setIsActive(true);
-                existing.setUpdatedAt(LocalDateTime.now());
-                stockRepository.save(existing);
-                Optional<StockBasic> basic = stockBasicRepository.findByCode(existing.getCode());
-                basic.ifPresent(stockBasic -> existing.setName(stockBasic.getName()));
-                return existing;
-            }
-        }
-
-        stock.setCreatedAt(LocalDateTime.now());
-        stock.setUpdatedAt(LocalDateTime.now());
-        stock.setIsActive(true);
-        Stock savedStock = stockRepository.save(stock);
-        
-        Optional<StockBasic> basic = stockBasicRepository.findByCode(savedStock.getCode());
-        basic.ifPresent(stockBasic -> savedStock.setName(stockBasic.getName()));
-        
-        return savedStock;
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Stock> getStockById(@PathVariable Long id) {
-        Optional<Stock> stockOptional = stockRepository.findById(id);
-        if (stockOptional.isPresent()) {
-            Stock stock = stockOptional.get();
-            if (!Boolean.TRUE.equals(stock.getIsActive())) {
-                return ResponseEntity.notFound().build();
-            }
-            Optional<StockBasic> basic = stockBasicRepository.findByCode(stock.getCode());
-            basic.ifPresent(stockBasic -> stock.setName(stockBasic.getName()));
-            return ResponseEntity.ok(stock);
-        }
-        return ResponseEntity.notFound().build();
+        stock.setIsActive(true); // 确保新创建的股票是活跃的
+        stock.setCreatedAt(null); // 确保由数据库自动生成
+        stock.setUpdatedAt(null); // 确保由数据库自动生成
+        return stockRepository.save(stock);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Stock> updateStock(@PathVariable Long id, @RequestBody Stock stockDetails) {
-        Optional<Stock> stockOptional = stockRepository.findById(id);
-        if (stockOptional.isPresent()) {
-            Stock stock = stockOptional.get();
-            if (!Boolean.TRUE.equals(stock.getIsActive())) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            // 关键修改：只更新用户可编辑的字段，忽略价格等由ETL维护的字段
-            // 这样可以防止前端旧数据覆盖ETL的新数据
-            
-            // 策略相关
-            if (stockDetails.getStrategy() != null) stock.setStrategy(stockDetails.getStrategy());
-            
-            // 价格计划相关 (允许更新为 null，如果前端传了 null)
-            // 注意：这里假设前端传的是全量用户编辑字段。如果前端传 null，意味着用户清空了该值。
-            // 如果前端没传（即为 null），也会被清空吗？
-            // 由于我们现在是全量提交（StockCard 提交完整的 localData），所以 stockDetails 中的字段就是用户当前看到的。
-            // 如果用户清空了输入框，前端传 null，这里就应该设为 null。
-            
-            stock.setBuyPrice(stockDetails.getBuyPrice());
-            stock.setTargetPrice(stockDetails.getTargetPrice());
-            stock.setStopLoss(stockDetails.getStopLoss());
-            stock.setNotes(stockDetails.getNotes());
-            
-            if (stockDetails.getConfidence() != null) stock.setConfidence(stockDetails.getConfidence());
-            
-            // 忽略 currentPrice, changePercent, code, symbol 等字段的更新
-            
-            stock.setUpdatedAt(LocalDateTime.now());
-
-            Stock updatedStock = stockRepository.save(stock);
-            Optional<StockBasic> basic = stockBasicRepository.findByCode(updatedStock.getCode());
-            basic.ifPresent(stockBasic -> updatedStock.setName(stockBasic.getName()));
-
-            return ResponseEntity.ok(updatedStock);
-        }
-        return ResponseEntity.notFound().build();
+    public Stock updateStock(@PathVariable Long id, @RequestBody Stock updatedStock) {
+        return stockRepository.findById(id)
+                .map(stock -> {
+                    stock.setBuyPrice(updatedStock.getBuyPrice());
+                    stock.setTargetPrice(updatedStock.getTargetPrice());
+                    stock.setStopLoss(updatedStock.getStopLoss());
+                    stock.setConfidence(updatedStock.getConfidence());
+                    stock.setNotes(updatedStock.getNotes());
+                    stock.setStrategy(updatedStock.getStrategy());
+                    // currentPrice 和 changePercent 由 ETL 更新，不通过此接口修改
+                    // stock.setCurrentPrice(updatedStock.getCurrentPrice());
+                    // stock.setChangePercent(updatedStock.getChangePercent());
+                    return stockRepository.save(stock);
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found with id " + id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStock(@PathVariable Long id) {
-        if (stockRepository.existsById(id)) {
-            stockRepository.softDeleteById(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-    
-    @GetMapping("/search")
-    public List<StockBasic> searchStocks(@RequestParam String keyword) {
-        List<StockBasic> results = stockBasicRepository.searchStocks(keyword);
-        return results.stream().limit(10).toList();
+    public ResponseEntity<?> deleteStock(@PathVariable Long id) {
+        return stockRepository.findById(id)
+                .map(stock -> {
+                    stockRepository.softDeleteById(id); // 软删除
+                    return ResponseEntity.ok().build();
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found with id " + id));
     }
 
-    @GetMapping("/test")
-    public String testConnection() {
-        return "后端API连接测试成功！当前时间: " + new java.util.Date();
+    @PostMapping("/{id}/reactivate")
+    public ResponseEntity<?> reactivateStock(@PathVariable Long id) {
+        return stockRepository.findById(id)
+                .map(stock -> {
+                    stockRepository.reactivateStock(id);
+                    return ResponseEntity.ok().build();
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found with id " + id));
+    }
+
+    // 搜索股票 (根据 code, symbol, name)
+    @GetMapping("/search")
+    public List<Stock> searchStocks(@RequestParam String keyword) {
+        // 这里可以根据实际需求调整搜索逻辑，例如模糊匹配 code, symbol, name
+        // 简单示例：直接使用 StockRepository 的 findAll 方法，然后过滤
+        // 更好的做法是使用 Specification 或者自定义查询
+        String lowerCaseKeyword = keyword.toLowerCase();
+        return stockRepository.findAll().stream()
+                .filter(stock -> stock.getCode().toLowerCase().contains(lowerCaseKeyword) ||
+                                 stock.getSymbol().toLowerCase().contains(lowerCaseKeyword) ||
+                                 stock.getName().toLowerCase().contains(lowerCaseKeyword))
+                .toList();
     }
 }

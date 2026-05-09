@@ -2,6 +2,7 @@ package com.stock.analysis.repository;
 
 import com.stock.analysis.entity.Stock;
 import com.stock.analysis.entity.StrategyType;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,8 +25,14 @@ public interface StockRepository extends JpaRepository<Stock, Long>, JpaSpecific
     Optional<Stock> findByCode(String code);
     
     /**
-     * 查找活跃的股票
+     * 根据股票符号查找股票 (使用 symbol，纯数字代码)
      */
+    Optional<Stock> findBySymbol(String symbol);
+    
+    /**
+     * 查找活跃的股票，并同时加载其交易记录
+     */
+    @EntityGraph(attributePaths = "tradeRecords") // 预加载 tradeRecords
     List<Stock> findByIsActiveTrue();
     
     /**

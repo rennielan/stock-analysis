@@ -5,6 +5,16 @@ export enum StrategyType {
   HOLDING = 'HOLDING'
 }
 
+export interface TradeRecord {
+  id: string;
+  stockName: string;
+  tradeTime: string;
+  quantity: number;
+  tradeDirection: string;
+  tradePrice: number;
+  totalAmount: number;
+}
+
 export interface StockData {
   id: string;
   code: string; // 新增 code (如 sh.600000)
@@ -20,6 +30,18 @@ export interface StockData {
   stopLoss: string;    // Keep as string for input handling
   confidence: number;  // 1-5
   notes: string;
+
+  // Holdings (持仓信息)
+  referenceShares?: number | null;  // 参考持股数量
+  costPrice?: number | null;        // 成本价
+  marketValue?: number;             // 持仓市值 (衍生字段)
+  totalCost?: number;               // 持仓成本 (衍生字段)
+  profitLoss?: number;              // 持仓盈亏 (衍生字段)
+  profitLossRatio?: number;         // 盈亏比例 (衍生字段)
+  perShareProfitLoss?: number;      // 单股盈亏 (衍生字段)
+
+  // Trades
+  tradeRecords?: TradeRecord[];
 }
 
 export const STRATEGY_CONFIG = {

@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Camera, FileSpreadsheet } from 'lucide-react';
 
 import { StockData, StrategyType } from './types';
 import { stockApi } from './services/stockApi';
 import StockRow from './components/StockCard';
 import AddStockForm from './components/AddStockForm';
+import TradeUpload from './components/TradeUpload';
+import HoldingUpload from './components/HoldingUpload';
 
 const App: React.FC = () => {
   // --- State Management ---
   const [stocks, setStocks] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploadMode, setUploadMode] = useState<'none' | 'trade' | 'holding'>('none');
 
   // --- Data Fetching ---
   useEffect(() => {
@@ -27,6 +30,17 @@ const App: React.FC = () => {
       if (stocks.length === 0) setLoading(true);
 
       const data = await stockApi.getAllStocks();
+      
+      // 打印后端返回的数据，检查是否包含衍生字段
+      console.log('Backend response:', data);
+      if (data.length > 0) {
+        console.log('First stock data:', data[0]);
+        console.log('referenceShares:', data[0].referenceShares);
+        console.log('costPrice:', data[0].costPrice);
+        console.log('profitLoss:', data[0].profitLoss);
+        console.log('profitLossRatio:', data[0].profitLossRatio);
+      }
+      
       setStocks(data);
       setError(null);
     } catch (err) {
@@ -118,70 +132,100 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex-1 max-w-md flex justify-end sm:justify-center">
-            <AddStockForm onAdd={handleAddStock} />
+            {uploadMode !== 'none' ? null : <AddStockForm onAdd={handleAddStock} />}
           </div>
 
-          <div className="w-[100px] hidden sm:block text-right text-xs text-slate-500 font-mono">
-            v1.3.0 Live
+          <div className="flex items-center gap-3">
+            {/* 持仓上传按钮 */}
+            <button
+              onClick={() => setUploadMode(uploadMode === 'holding' ? 'none' : 'holding')}
+              className={`flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${uploadMode === 'holding' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              style={{ minWidth: '100px' }}
+            >
+              <FileSpreadsheet size={16} />
+              <span>{uploadMode === 'holding' ? '返回列表' : '导入持仓'}</span>
+            </button>
+
+            {/* 交割单识别按钮 */}
+            <button
+              onClick={() => setUploadMode(uploadMode === 'trade' ? 'none' : 'trade')}
+              className={`flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${uploadMode === 'trade' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              style={{ minWidth: '100px' }}
+            >
+              <Camera size={16} />
+              <span>{uploadMode === 'trade' ? '返回列表' : '导入交割单'}</span>
+            </button>
+
+            <div className="w-[100px] hidden lg:block text-right text-xs text-slate-500 font-mono">
+              v1.4.0 Live
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12">
-        
-        {loading && stocks.length === 0 ? (
-          <div className="flex justify-center items-center min-h-[50vh]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-            <div className="text-rose-500 mb-4">{error}</div>
-            <button
-              onClick={fetchStocks}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors"
-            >
-              重试
-            </button>
-          </div>
-        ) : stocks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center border-2 border-dashed border-slate-800 rounded-2xl p-8">
-            <div className="bg-slate-900 p-4 rounded-full mb-4">
-              <LayoutDashboard size={32} className="text-slate-600" />
-            </div>
-            <h3 className="text-lg font-medium text-slate-300">您的关注列表为空</h3>
-            <p className="text-slate-500 mt-2 max-w-sm">
-              在上方搜索股票代码或名称，开始制定您的交易计划。
-            </p>
-          </div>
+        {uploadMode === 'trade' ? (
+          <TradeUpload />
+        ) : uploadMode === 'holding' ? (
+          <HoldingUpload />
         ) : (
-          <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/50 shadow-sm ring-1 ring-white/5">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/50 text-[10px] uppercase tracking-wider text-slate-500 font-semibold font-mono">
-                  <th className="p-4 w-32">代码</th>
-                  <th className="p-4 w-28">价格</th>
-                  <th className="p-4 w-32">策略</th>
-                  <th className="p-4 w-40">交易计划</th>
-                  <th className="p-4 w-24">空间 %</th>
-                  <th className="p-4 w-24">盈亏比</th>
-                  <th className="p-4 w-32">信心</th>
-                  <th className="p-4">备注</th>
-                  <th className="p-4 w-12"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/50">
-                {stocks.map(stock => (
-                  <StockRow 
-                    key={stock.id} 
-                    data={stock} 
-                    onUpdate={handleUpdateStock} 
-                    onRemove={handleRemoveStock} 
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            {loading && stocks.length === 0 ? (
+              <div className="flex justify-center items-center min-h-[50vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+                <div className="text-rose-500 mb-4">{error}</div>
+                <button
+                  onClick={fetchStocks}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors"
+                >
+                  重试
+                </button>
+              </div>
+            ) : stocks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center border-2 border-dashed border-slate-800 rounded-2xl p-8">
+                <div className="bg-slate-900 p-4 rounded-full mb-4">
+                  <LayoutDashboard size={32} className="text-slate-600" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-300">您的关注列表为空</h3>
+                <p className="text-slate-500 mt-2 max-w-sm">
+                  在上方搜索股票代码或名称，开始制定您的交易计划。
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/50 shadow-sm ring-1 ring-white/5">
+                <table className="w-full text-left border-collapse table-fixed">
+                  <thead>
+                    <tr className="border-b border-slate-800 bg-slate-900/50 text-[10px] uppercase tracking-wider text-slate-500 font-semibold font-mono">
+                      <th className="p-4 w-22">名称</th>
+                      <th className="p-4 w-28">价格</th>
+                      <th className="p-4 w-48">交易计划</th>
+                      <th className="p-4 w-28">持仓</th>
+                      <th className="p-4 w-32">成本</th>
+                      <th className="p-4 w-28">市值</th>
+                      <th className="p-4 w-28">盈亏</th>
+                      <th className="p-4 w-32">盈亏%</th>
+                      <th className="p-4 w-40">备注</th>
+                      <th className="p-4 w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50">
+                    {stocks.map(stock => (
+                      <StockRow
+                        key={stock.id}
+                        data={stock}
+                        onUpdate={handleUpdateStock}
+                        onRemove={handleRemoveStock}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

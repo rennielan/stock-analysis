@@ -1,16 +1,23 @@
 package com.stock.analysis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "stocks", indexes = {
-    @Index(name = "idx_stock_code", columnList = "code", unique = true)
+    @Index(name = "idx_stock_code", columnList = "code", unique = true),
+    @Index(name = "idx_stock_symbol", columnList = "symbol")
 })
 @Data
+@ToString(exclude = "tradeRecords")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Stock {
     
     @Id
@@ -23,7 +30,7 @@ public class Stock {
     @Column(name = "symbol", nullable = false, length = 20)
     private String symbol; // 纯数字代码，如 600000
 
-    @Transient // 不持久化到数据库，仅用于展示
+    @Column(name = "name", length = 100)
     private String name;
     
     @Column(name = "current_price", nullable = false, precision = 10, scale = 4)
@@ -59,6 +66,16 @@ public class Stock {
     
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @Column(name = "reference_shares", precision = 16, scale = 2)
+    private BigDecimal referenceShares; // 参考持股数量
+
+    @Column(name = "cost_price", precision = 10, scale = 4)
+    private BigDecimal costPrice; // 成本价
+
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("tradeTime DESC")
+    private List<TradeRecord> tradeRecords = new ArrayList<>();
     
     // 构造函数
     public Stock() {}
@@ -68,23 +85,5 @@ public class Stock {
         this.symbol = symbol;
         this.currentPrice = currentPrice;
         this.changePercent = changePercent;
-    }
-
-    @Override
-    public String toString() {
-        return "Stock{" +
-                "id=" + id +
-                ", code='" + code + '\'' +
-                ", symbol='" + symbol + '\'' +
-                ", name='" + name + '\'' +
-                ", currentPrice=" + currentPrice +
-                ", changePercent=" + changePercent +
-                ", strategy=" + strategy +
-                ", buyPrice=" + buyPrice +
-                ", targetPrice=" + targetPrice +
-                ", stopLoss=" + stopLoss +
-                ", confidence=" + confidence +
-                ", isActive=" + isActive +
-                '}';
     }
 }

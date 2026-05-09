@@ -14,6 +14,8 @@ public interface StockBasicRepository extends JpaRepository<StockBasic, Long> {
     
     Optional<StockBasic> findByCode(String code);
     
+    Optional<StockBasic> findBySymbol(String symbol);
+    
     /**
      * 模糊搜索：匹配 code, symbol 或 name
      */

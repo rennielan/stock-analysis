@@ -1,14 +1,12 @@
 import time
 import schedule
-import pymysql
-from sqlalchemy import create_engine, text
-import pandas as pd
 import os
 import urllib.parse
-import random
-import baostock as bs
-import datetime
+from sqlalchemy import create_engine, text
 import stock_basic_etl
+
+# 引入新的工具类
+from baostock_utils import BaostockUtils
 
 # 数据库配置
 DB_HOST = os.getenv('DB_HOST', 'localhost')
@@ -21,160 +19,68 @@ print(f"Connecting to database at {DB_HOST}:{DB_PORT} as {DB_USER}")
 
 encoded_pass = urllib.parse.quote_plus(DB_PASS)
 db_url = f"mysql+pymysql://{DB_USER}:{encoded_pass}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
-engine = create_engine(db_url)
 
-def init_baostock():
-    lg = bs.login()
-    if lg.error_code != '0':
-        print(f"login respond error_code:{lg.error_code}")
-        return False
-    return True
+connect_args = {
+    "ssl": {"fake_flag_to_enable_tls": False},
+}
 
-def fetch_and_save_daily_k_data(code):
+try:
+    engine = create_engine(db_url, connect_args=connect_args)
+    with engine.connect() as conn:
+        print("Database connection successful!")
+except Exception as e:
+    print(f"Initial database connection failed: {e}")
+
+def process_single_stock(code):
     """
-    获取并保存日线数据 (使用 code)
+    处理单只股票的数据拉取和入库 (包含日线、周线、月线)
     """
-    # code 已经是 baostock 格式 (如 sh.600000)
     print(f"Fetching data for {code}...")
     
-    end_date = datetime.datetime.now().strftime("%Y-%m-%d")
-    start_date = (datetime.datetime.now() - datetime.timedelta(days=50)).strftime("%Y-%m-%d")
-    
-    rs = bs.query_history_k_data_plus(code,
-        "date,open,high,low,close,preclose,volume,amount,turn,pctChg,peTTM,pbMRQ",
-        start_date=start_date, end_date=end_date,
-        frequency="d", adjustflag="3")
+    market_data = None
 
-    if rs.error_code != '0':
-        print(f"query_history_k_data_plus error: {rs.error_msg}")
-        return None
+    # 拉取并保存日线 ('d')
+    df_daily = BaostockUtils.fetch_k_data(code, frequency='d', days=50)
+    if df_daily is not None:
+        # 日线的保存会返回最新的价格和涨跌幅，用于更新 stocks 主表
+        market_data = BaostockUtils.save_k_data_to_db(df_daily, code, 'd', engine)
+    else:
+        # 如果由于某种原因获取为空，尝试读取最后一条数据（如节假日）
+        market_data = BaostockUtils.get_latest_price_from_db(code, 'd', engine)
 
-    data_list = []
-    while (rs.error_code == '0') & rs.next():
-        data_list.append(rs.get_row_data())
-        
-    if not data_list:
-        print(f"No data found for {code}")
-        return None
-    
-    result = pd.DataFrame(data_list, columns=rs.fields)
-    
-    numeric_cols = ['open', 'high', 'low', 'close', 'preclose', 'volume', 'amount', 'turn', 'pctChg', 'peTTM', 'pbMRQ']
-    for col in numeric_cols:
-        result[col] = pd.to_numeric(result[col], errors='coerce')
-    
-    db_columns = {
-        'date': 'trade_date',
-        'open': 'open_price',
-        'high': 'high_price',
-        'low': 'low_price',
-        'close': 'close_price',
-        'preclose': 'pre_close_price',
-        'volume': 'volume',
-        'amount': 'amount',
-        'turn': 'turnover_rate',
-        'pctChg': 'pct_chg',
-        'peTTM': 'pe_ttm',
-        'pbMRQ': 'pb_mrq'
-    }
-    result.rename(columns=db_columns, inplace=True)
-    result['code'] = code
-    # 提取 symbol (去掉 sh./sz.)
-    result['symbol'] = code.split('.')[1] if '.' in code else code
-    
-    try:
-        # 使用临时表 + MERGE (INSERT ON DUPLICATE KEY UPDATE) 逻辑
-        temp_table_name = f"temp_daily_k_{code.replace('.', '_')}_{int(time.time())}"
-        
-        # 1. 将数据写入临时表
-        result.to_sql(temp_table_name, engine, if_exists='replace', index=False)
-        
-        with engine.begin() as conn:
-            # 2. 执行 MERGE 操作
-            merge_sql = text(f"""
-                INSERT INTO daily_k_lines (
-                    code, symbol, trade_date, open_price, high_price, low_price, close_price, 
-                    pre_close_price, volume, amount, turnover_rate, pct_chg, pe_ttm, pb_mrq
-                )
-                SELECT 
-                    code, symbol, trade_date, open_price, high_price, low_price, close_price, 
-                    pre_close_price, volume, amount, turnover_rate, pct_chg, pe_ttm, pb_mrq
-                FROM {temp_table_name}
-                ON DUPLICATE KEY UPDATE
-                    open_price = VALUES(open_price),
-                    high_price = VALUES(high_price),
-                    low_price = VALUES(low_price),
-                    close_price = VALUES(close_price),
-                    pre_close_price = VALUES(pre_close_price),
-                    volume = VALUES(volume),
-                    amount = VALUES(amount),
-                    turnover_rate = VALUES(turnover_rate),
-                    pct_chg = VALUES(pct_chg),
-                    pe_ttm = VALUES(pe_ttm),
-                    pb_mrq = VALUES(pb_mrq);
-            """)
-            conn.execute(merge_sql)
-            
-            # 3. 删除临时表
-            conn.execute(text(f"DROP TABLE {temp_table_name}"))
-            
-        print(f"Merged {len(result)} rows for {code}")
-        
-        if not result.empty:
-            latest_data = result.iloc[-1]
-            return {
-                'current_price': latest_data['close_price'],
-                'change_percent': latest_data['pct_chg']
-            }
-        else:
-             with engine.connect() as conn:
-                query = text("SELECT close_price, pct_chg FROM daily_k_lines WHERE code = :code ORDER BY trade_date DESC LIMIT 1")
-                row = conn.execute(query, {"code": code}).fetchone()
-                if row:
-                    return {
-                        'current_price': row[0],
-                        'change_percent': row[1]
-                    }
-            
-    except Exception as e:
-        print(f"Error saving data for {code}: {e}")
-        # 如果是因为重复键错误，说明数据已存在，忽略
-        if "Duplicate entry" in str(e):
-            print("Data already exists (duplicate entry), skipping...")
-        else:
-            # 尝试清理临时表
-            try:
-                with engine.begin() as conn:
-                    conn.execute(text(f"DROP TABLE IF EXISTS {temp_table_name}"))
-            except:
-                pass
-            raise e
+    # 拉取并保存周线 ('w')
+    df_weekly = BaostockUtils.fetch_k_data(code, frequency='w', days=50)
+    if df_weekly is not None:
+        BaostockUtils.save_k_data_to_db(df_weekly, code, 'w', engine)
 
-    return None
+    # 拉取并保存月线 ('m')
+    df_monthly = BaostockUtils.fetch_k_data(code, frequency='m', days=50)
+    if df_monthly is not None:
+        BaostockUtils.save_k_data_to_db(df_monthly, code, 'm', engine)
+
+    return market_data
 
 def update_stock_prices():
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 开始更新股票价格...")
     
-    if not init_baostock():
-        print("Baostock login failed")
+    if not BaostockUtils.login():
         return
 
     try:
         with engine.connect() as conn:
-            # 使用 code 查询
             result = conn.execute(text("SELECT id, code FROM stocks WHERE is_active = 1"))
             stocks = result.fetchall()
             
         if not stocks:
             print("没有需要更新的股票")
-            bs.logout()
+            BaostockUtils.logout()
             return
         
         print(f"Found {len(stocks)} active stocks to update.")
 
         for stock_id, code in stocks:
             try:
-                market_data = fetch_and_save_daily_k_data(code)
+                market_data = process_single_stock(code)
                 
                 if market_data:
                     with engine.connect() as conn:
@@ -194,16 +100,16 @@ def update_stock_prices():
                         
                     print(f"更新 stocks 表成功: {code} -> ${market_data['current_price']}")
                 
-                time.sleep(0.5)
+                time.sleep(0.5) # 稍微睡眠以避免频繁请求
                 
             except Exception as e:
                 print(f"更新失败 {code}: {str(e)}")
         
-        bs.logout()
+        BaostockUtils.logout()
                 
     except Exception as e:
         print(f"ETL任务执行出错: {str(e)}")
-        bs.logout()
+        BaostockUtils.logout()
 
 def check_new_active_stocks():
     """
@@ -212,19 +118,18 @@ def check_new_active_stocks():
     try:
         with engine.connect() as conn:
             # 查找 is_active=1 且 current_price=0 的股票
-            # 假设新添加的股票初始价格为 0
             result = conn.execute(text("SELECT id, code FROM stocks WHERE is_active = 1 AND current_price = 0"))
             new_stocks = result.fetchall()
             
         if new_stocks:
             print(f"Found {len(new_stocks)} new active stocks without price data. Updating...")
-            if not init_baostock():
-                print("Baostock login failed")
+            if not BaostockUtils.login():
                 return
 
             for stock_id, code in new_stocks:
                 try:
-                    market_data = fetch_and_save_daily_k_data(code)
+                    market_data = process_single_stock(code)
+                    
                     if market_data:
                         with engine.connect() as conn:
                             update_sql = text("""
@@ -245,7 +150,7 @@ def check_new_active_stocks():
                 except Exception as e:
                     print(f"Failed to initialize new stock {code}: {e}")
             
-            bs.logout()
+            BaostockUtils.logout()
             
     except Exception as e:
         print(f"Error checking new stocks: {e}")
@@ -271,7 +176,7 @@ def main():
     schedule.every().day.at("20:30").do(update_stock_prices)
     schedule.every().day.at("02:00").do(stock_basic_etl.fetch_and_save_stock_basics)
     
-    # 新增：每 10 秒检查一次是否有新添加的股票需要初始化数据
+    # 每 10 秒检查一次是否有新添加的股票需要初始化数据
     schedule.every(10).seconds.do(check_new_active_stocks)
     
     while True:
